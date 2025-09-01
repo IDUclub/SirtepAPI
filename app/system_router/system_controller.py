@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse
 
 from app.common.exceptions.http_exception_wrapper import http_exception
 from app.dependencies import absolute_app_path, config
+
 from .config import config_service
 from .schemas import ConfigSchema
 
@@ -38,6 +39,7 @@ async def get_logs():
             _detail={"error": repr(e)},
         ) from e
 
+
 @system_router.get("/config", response_model=ConfigSchema)
 async def get_config(key: str) -> ConfigSchema:
     """
@@ -49,6 +51,7 @@ async def get_config(key: str) -> ConfigSchema:
     """
 
     return await config_service.get_config(key)
+
 
 @system_router.post("/config", response_model=ConfigSchema, status_code=201)
 async def set_config(key: str, value: str) -> ConfigSchema:
@@ -62,6 +65,7 @@ async def set_config(key: str, value: str) -> ConfigSchema:
     """
 
     return await config_service.set_config(key, value)
+
 
 @system_router.patch("/config", response_model=ConfigSchema, status_code=201)
 async def reset_config(key: str, value: str) -> ConfigSchema:

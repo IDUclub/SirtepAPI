@@ -104,7 +104,12 @@ class UrbanAPIGateway:
             return pd.DataFrame.from_records(response)
         return pd.DataFrame()
 
-    async def get_physical_objects(self, scenario_id: int, physical_object_types_ids: list[int], token: str | None = None) -> gpd.GeoDataFrame | pd.DataFrame:
+    async def get_physical_objects(
+        self,
+        scenario_id: int,
+        physical_object_types_ids: list[int],
+        token: str | None = None,
+    ) -> gpd.GeoDataFrame | pd.DataFrame:
         """
         Function retrieves physical objects by their type ids.
         Args:

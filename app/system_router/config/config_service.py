@@ -1,8 +1,9 @@
 from iduconfig import Config
 
 from app.common.exceptions.http_exception_wrapper import http_exception
-from app.system_router.schemas import ConfigSchema
 from app.dependencies import config
+from app.system_router.schemas import ConfigSchema
+
 
 class ConfigService:
     """

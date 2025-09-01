@@ -3,7 +3,7 @@ import asyncio
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import MultiPolygon, Polygon
 
 from app.sirtep.mappings import PROFILE_OBJ_PRIORITY_MAP
 
@@ -27,7 +27,9 @@ class DataParser:
             gpd.GeoDataFrame: parsed living buildings gdf in input crs
         """
 
-        living_buildings["physical_object_id"] = living_buildings["physical_objects"].apply(lambda x: x[0]["physical_object_id"])
+        living_buildings["physical_object_id"] = living_buildings[
+            "physical_objects"
+        ].apply(lambda x: x[0]["physical_object_id"])
         living_buildings_gdf = living_buildings.set_index(
             "physical_object_id", drop=True
         )
@@ -88,7 +90,9 @@ class DataParser:
         """
 
         services_gdf = services.set_index("service_id", drop=True)
-        services_gdf["service_area"] = services_gdf.to_crs(services_gdf.estimate_utm_crs()).area.copy()
+        services_gdf["service_area"] = services_gdf.to_crs(
+            services_gdf.estimate_utm_crs()
+        ).area.copy()
         services_gdf["weight"] = services_gdf["service_type"].apply(
             lambda x: (
                 x["properties"]["weight_value"]
@@ -103,8 +107,10 @@ class DataParser:
         normative["service_type_id"] = normative["service_type"].apply(
             lambda x: x["id"]
         )
-        services_gdf["service_type_id"] = services_gdf["service_type"].apply(lambda x: x["service_type_id"])
-        services_gdf= pd.merge(
+        services_gdf["service_type_id"] = services_gdf["service_type"].apply(
+            lambda x: x["service_type_id"]
+        )
+        services_gdf = pd.merge(
             services_gdf,
             normative[
                 [
@@ -153,18 +159,26 @@ class DataParser:
         """
 
         objects_gdf = objects.set_index("physical_object_id", drop=True)
-        objects_gdf["physical_object_type_id"] = objects_gdf["physical_object_type"].apply(lambda x: x["physical_object_type_id"])
+        objects_gdf["physical_object_type_id"] = objects_gdf[
+            "physical_object_type"
+        ].apply(lambda x: x["physical_object_type_id"])
         objects_gdf["priority"] = objects_gdf["physical_object_type_id"].map(
             lambda x: PROFILE_OBJ_PRIORITY_MAP[profile_id].index(x)
         )
         objects_gdf.to_crs(objects.estimate_utm_crs(), inplace=True)
         objects_gdf["geometry"] = objects_gdf["geometry"].apply(
-            lambda geom: geom if geom.geom_type in [Polygon, MultiPolygon] else geom.buffer(NON_POLY_OBJECTS_BUFFER)
+            lambda geom: (
+                geom
+                if geom.geom_type in [Polygon, MultiPolygon]
+                else geom.buffer(NON_POLY_OBJECTS_BUFFER)
+            )
         )
         objects_gdf["area"] = objects_gdf.area.copy()
         return objects_gdf.to_crs(4326)
 
-    async def async_parse_objects(self, objects: gpd.GeoDataFrame, profile_id: int) -> gpd.GeoDataFrame:
+    async def async_parse_objects(
+        self, objects: gpd.GeoDataFrame, profile_id: int
+    ) -> gpd.GeoDataFrame:
         """
         Function parses all data from raw objects asynchronously
         Args:
