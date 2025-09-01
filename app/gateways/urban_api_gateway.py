@@ -1,7 +1,10 @@
+import asyncio
+
 import geopandas as gpd
 import pandas as pd
 
 from app.common.api_handlers.json_api_handler import JSONAPIHandler
+from app.common.exceptions.http_exception_wrapper import http_exception
 
 living_buildings_id = 4
 
@@ -70,7 +73,7 @@ class UrbanAPIGateway:
 
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         response = await self.json_handler.get(
-            f"/api/v1/scenarios/{scenario_id}/services_with_geometries", headers=headers
+            f"/api/v1/scenarios/{scenario_id}/services_with_geometry", headers=headers
         )
         if response["features"]:
             result = gpd.GeoDataFrame.from_features(response, crs=4326)
@@ -80,7 +83,7 @@ class UrbanAPIGateway:
         else:
             return gpd.GeoDataFrame()
 
-    async def get_normatives(
+    async def get_normative(
         self,
         territory_id: int,
         year: int | None = None,
@@ -95,9 +98,44 @@ class UrbanAPIGateway:
         """
 
         response = await self.json_handler.get(
-            f"api/v1/territory/{territory_id}/normatives",
-            params={"year": year},
+            f"/api/v1/territory/{territory_id}/normatives",
         )
         if response:
             return pd.DataFrame.from_records(response)
         return pd.DataFrame()
+
+    async def get_physical_objects(self, scenario_id: int, physical_object_types_ids: list[int], token: str | None = None) -> gpd.GeoDataFrame | pd.DataFrame:
+        """
+        Function retrieves physical objects by their type ids.
+        Args:
+            scenario_id (int): scenario id.
+            physical_object_types_ids (list[int]): list of physical object type ids.
+            token (str | None): authentication token, if required by the API.
+        Returns:
+            gpd.GeoDataFrame | pd.DataFrame: physical objects layer or empty gpd.GeoDataFrame.
+        """
+
+        headers = {"Authorization": f"Bearer {token}"} if token else {}
+        try:
+            tasks = [
+                self.json_handler.get(
+                    f"/api/v1/scenarios/{scenario_id}/physical_objects_with_geometry",
+                    headers=headers,
+                    params={"physical_object_type_id": obj_type_id},
+                )
+                for obj_type_id in physical_object_types_ids
+            ]
+            responses = await asyncio.gather(*tasks)
+            results = [
+                gpd.GeoDataFrame.from_features(response, crs=4326)
+                for response in responses
+                if response and response.get("features")
+            ]
+            return pd.concat(results)
+        except Exception as e:
+            raise http_exception(
+                500,
+                "Error during extracting physical objects from urban api",
+                _input={"physical_object_types_ids": physical_object_types_ids},
+                _detail={"error": repr(e)},
+            ) from e
