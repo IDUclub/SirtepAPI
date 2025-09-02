@@ -34,7 +34,7 @@ class SirtepService:
         tasks = [
             self.urban_api_gateway.get_scenario_living_buildings(scenario_id, token),
             self.urban_api_gateway.get_scenario_services(scenario_id, token),
-            self.urban_api_gateway.get_normative(territory_id, token),
+            self.urban_api_gateway.get_normative(territory_id),
         ]
         return await asyncio.gather(*tasks)
 
