@@ -1,8 +1,6 @@
-import sys
 from pathlib import Path
 
 from iduconfig import Config
-from loguru import logger
 
 from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.api_handlers.json_api_handler import JSONAPIHandler
