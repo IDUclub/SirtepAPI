@@ -22,7 +22,7 @@ async def get_logs():
         return FileResponse(
             LOGS_PATH,
             media_type="application/octet-stream",
-            filename=f"effects.log",
+            filename=config.get("LOG_NAME"),
         )
     except FileNotFoundError as e:
         raise http_exception(

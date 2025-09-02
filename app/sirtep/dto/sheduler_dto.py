@@ -14,13 +14,15 @@ class SchedulerDTO(BaseModel):
     """
 
     scenario_id: int = Field(
-        ..., description="The project scenario id to run optimization on."
+        ge=0, description="The project scenario id to run optimization on."
     )
     profile_id: int = Field(
-        ..., description="The project profile id to run optimization on."
+        ge=0, description="The project profile id to run optimization on."
     )
     periods: int = Field(
-        ...,
+        ge=0,
         description="The number of  period of the optimization. Highly recommended to use quarters. SSERs AND TEPs will be calculated for each 5-th part of all periods.",
     )
-    max_area_per_period: int = Field(..., description="Construction speed for scenario")
+    max_area_per_period: int = Field(
+        ge=0, description="Construction speed for scenario"
+    )

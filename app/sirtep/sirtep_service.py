@@ -5,9 +5,9 @@ import pandas as pd
 from sirtep import optimize_building_schedule, optimize_provision_building_schedule
 from sirtep.sirtep_dataclasses.scheduler_dataclasses import ProvisionSchedulerDataClass
 
+from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.exceptions.http_exception_wrapper import http_exception
 from app.dependencies import urban_api_gateway
-from app.gateways.urban_api_gateway import UrbanAPIGateway
 
 from .dto import SchedulerDTO
 from .mappings import PROFILE_OBJ_PRIORITY_MAP
@@ -25,7 +25,7 @@ PRIORITY_PROFILES = [3, 4, 5, 6, 7, 9]
 
 class SirtepService:
 
-    def __init__(self, urban_api_gateway: UrbanAPIGateway):
+    def __init__(self, urban_api_gateway: UrbanAPIClient):
         self.urban_api_gateway = urban_api_gateway
 
     async def collect_project_data(
@@ -120,13 +120,12 @@ class SirtepService:
                 **schedule.rename(columns={"name": "id"}).to_dict(orient="list")
             )
             return SchedulerOptimizaionSchema(provision=None, simple=scheduler_dto)
-        else:
-            raise http_exception(
-                400,
-                msg="Profile id is not supported",
-                _input={"profile_id": params.profile_id},
-                _detail={"available_profiles": PROVISION_PROFILES + PRIORITY_PROFILES},
-            )
+        raise http_exception(
+            400,
+            msg="Profile id is not supported",
+            _input={"profile_id": params.profile_id},
+            _detail={"available_profiles": PROVISION_PROFILES + PRIORITY_PROFILES},
+        )
 
 
 sirtep_service = SirtepService(urban_api_gateway)

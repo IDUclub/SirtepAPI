@@ -6,14 +6,14 @@ import pandas as pd
 from app.common.api_handlers.json_api_handler import JSONAPIHandler
 from app.common.exceptions.http_exception_wrapper import http_exception
 
-living_buildings_id = 4
+LIVING_BUILDINGS_ID = 4
 
 
-class UrbanAPIGateway:
+class UrbanAPIClient:
 
-    def __init__(self, base_url: str) -> None:
-        self.json_handler = JSONAPIHandler(base_url)
-        self.__name__ = "UrbanAPIGateway"
+    def __init__(self, json_handler: JSONAPIHandler) -> None:
+        self.json_handler = json_handler
+        self.__name__ = "UrbanAPIClient"
 
     async def get_scenario_info(
         self, scenario_id: int, token: str | None = None
@@ -48,7 +48,7 @@ class UrbanAPIGateway:
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         response = await self.json_handler.get(
             f"/api/v1/scenarios/{scenario_id}/geometries_with_all_objects",
-            params={"physical_object_type_id": living_buildings_id},
+            params={"physical_object_type_id": LIVING_BUILDINGS_ID},
             headers=headers,
         )
         if response["features"]:
@@ -60,7 +60,7 @@ class UrbanAPIGateway:
         scenario_id: int,
         token: str | None = None,
         service_type_ids: list[int] | None = None,
-    ) -> gpd.GeoDataFrame:
+    ) -> gpd.GeoDataFrame | None:
         """
         Function retrieves service information by scenario id.
         Args:
@@ -68,7 +68,7 @@ class UrbanAPIGateway:
             token (str | None): authentication token, if required by the API.
             service_type_ids (list[int] | None): service types ids to filter services by.
         Returns:
-            gpd.GeoDataFrame: services layer or empty gpd.GeoDataFrame.
+            gpd.GeoDataFrame | None: services layer or None.
         """
 
         headers = {"Authorization": f"Bearer {token}"} if token else {}
@@ -81,20 +81,18 @@ class UrbanAPIGateway:
                 result = result[result["service_type_ud"].isin(service_type_ids)].copy()
             return result
         else:
-            return gpd.GeoDataFrame()
+            return None
 
     async def get_normative(
         self,
         territory_id: int,
-        year: int | None = None,
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame | None:
         """
         Function retrieves normative information by territory id.
         Args:
             territory_id (int): territory id.
-            year (int): year.
         Returns:
-            pd.DataFrame: normative layer or empty gpd.GeoDataFrame.
+            pd.DataFrame | None: normative layer or None.
         """
 
         response = await self.json_handler.get(
@@ -102,7 +100,7 @@ class UrbanAPIGateway:
         )
         if response:
             return pd.DataFrame.from_records(response)
-        return pd.DataFrame()
+        return None
 
     async def get_physical_objects(
         self,

@@ -18,7 +18,7 @@ class JSONAPIHandler:
         """
 
         self.__name__ = "UrbanAPIGateway"
-        self.base_url = base_url
+        self.base_url = base_url.rstrip("/")
 
     @staticmethod
     async def _check_response_status(
@@ -77,14 +77,14 @@ class JSONAPIHandler:
 
     async def get(
         self,
-        endpoint_url: str,
+        endpoint: str,
         headers: dict | None = None,
         params: dict | None = None,
         session: aiohttp.ClientSession | None = None,
     ) -> dict | list:
         """Function to get data from api
         Args:
-            endpoint_url (str): Endpoint url
+            endpoint (str): Endpoint url
             headers (dict | None): Headers
             params (dict | None): Query parameters
             session (aiohttp.ClientSession | None): Session to use
@@ -95,18 +95,16 @@ class JSONAPIHandler:
         if not session:
             async with aiohttp.ClientSession() as session:
                 return await self.get(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     session=session,
                 )
-        url = self.base_url + endpoint_url
+        url = f'{self.base_url}/{endpoint.lstrip("/")}'
         params = await self._check_request_params(params)
         async with session.get(url=url, headers=headers, params=params) as response:
             result = await self._check_response_status(response)
-            if isinstance(result, list):
-                return result
-            elif isinstance(result, dict):
+            if isinstance(result, (list, dict)):
                 return result
             if not result:
                 if isinstance(result, list):
@@ -114,7 +112,7 @@ class JSONAPIHandler:
                 elif isinstance(result, dict):
                     return result
                 return await self.get(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     session=session,
@@ -123,7 +121,7 @@ class JSONAPIHandler:
 
     async def post(
         self,
-        endpoint_url: str,
+        endpoint: str,
         headers: dict | None = None,
         params: dict | None = None,
         data: dict | None = None,
@@ -131,7 +129,7 @@ class JSONAPIHandler:
     ) -> dict | list:
         """Function to post data from api
         Args:
-            endpoint_url (str): Endpoint url
+            endpoint (str): Endpoint url
             headers (dict | None): Headers
             params (dict | None): Query parameters
             data (dict | None): Request data
@@ -143,13 +141,13 @@ class JSONAPIHandler:
         if not session:
             async with aiohttp.ClientSession() as session:
                 return await self.post(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     data=data,
                     session=session,
                 )
-        url = self.base_url + endpoint_url
+        url = f'{self.base_url}/{endpoint.lstrip("/")}'
         params = await self._check_request_params(params)
         async with session.post(
             url=url,
@@ -160,7 +158,7 @@ class JSONAPIHandler:
             result = await self._check_response_status(response)
             if not result:
                 return await self.post(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     session=session,
@@ -169,7 +167,7 @@ class JSONAPIHandler:
 
     async def put(
         self,
-        endpoint_url: str,
+        endpoint: str,
         headers: dict | None = None,
         params: dict | None = None,
         data: dict | None = None,
@@ -177,7 +175,7 @@ class JSONAPIHandler:
     ) -> dict | list:
         """Function to post data from api
         Args:
-            endpoint_url (str): Endpoint url
+            endpoint (str): Endpoint url
             headers (dict | None): Headers
             params (dict | None): Query parameters
             data (dict | None): Request data
@@ -189,13 +187,13 @@ class JSONAPIHandler:
         if not session:
             async with aiohttp.ClientSession() as session:
                 return await self.put(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     data=data,
                     session=session,
                 )
-        url = self.base_url + endpoint_url
+        url = f'{self.base_url}/{endpoint.lstrip("/")}'
         params = await self._check_request_params(params)
         async with session.put(
             url=url,
@@ -206,7 +204,7 @@ class JSONAPIHandler:
             result = await self._check_response_status(response)
             if not result:
                 return await self.put(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     session=session,
@@ -215,7 +213,7 @@ class JSONAPIHandler:
 
     async def delete(
         self,
-        endpoint_url: str,
+        endpoint: str,
         headers: dict | None = None,
         params: dict | None = None,
         data: dict | None = None,
@@ -223,7 +221,7 @@ class JSONAPIHandler:
     ) -> dict | list:
         """Function to post data from api
         Args:
-            endpoint_url (str): Endpoint url
+            endpoint (str): Endpoint url
             headers (dict | None): Headers
             params (dict | None): Query parameters
             data (dict | None): Request data
@@ -235,13 +233,13 @@ class JSONAPIHandler:
         if not session:
             async with aiohttp.ClientSession() as session:
                 return await self.delete(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     data=data,
                     session=session,
                 )
-        url = self.base_url + endpoint_url
+        url = f'{self.base_url}/{endpoint.lstrip("/")}'
         params = await self._check_request_params(params)
         async with session.delete(
             url=url,
@@ -252,7 +250,7 @@ class JSONAPIHandler:
             result = await self._check_response_status(response)
             if not result:
                 return await self.delete(
-                    endpoint_url=endpoint_url,
+                    endpoint=endpoint,
                     headers=headers,
                     params=params,
                     session=session,

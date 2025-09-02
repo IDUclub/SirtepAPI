@@ -5,16 +5,53 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import MultiPolygon, Polygon
 
+from app.dependencies import config
 from app.sirtep.mappings import PROFILE_OBJ_PRIORITY_MAP
 
-DEFAULT_FLOORS = 3
-LIVING_AREA_COEF = 0.8
-METRES_PER_HUMAN = 20
-MEDIUM_SPEED = 40  # km per hour
-NON_POLY_OBJECTS_BUFFER = 5  # meters
+DEFAULT_FLOORS = int(config.get("DEFAULT_FLOORS"))
+LIVING_AREA_COEF = float(config.get("LIVING_AREA_COEF"))
+METRES_PER_HUMAN = int(config.get("METRES_PER_HUMAN"))
+MEDIUM_SPEED = int(config.get("MEDIUM_SPEED"))  # km per hour
+NON_POLY_OBJECTS_BUFFER = int(config.get("NON_POLY_OBJECTS_BUFFER"))  # meters
 
 
 class DataParser:
+    """
+    Class for data parsing from urban api in appropriate format for sirtep lib use.
+
+    Attributes:
+        default_floors (int): The default floor number of the project.
+        living_area_coef (float): The maximum area of the project to be considered. 0.0 < living_area_coef < 1.0.
+        metres_per_human (int): The maximum area of the project to be considered.
+        medium_speed (int): The medium speed of the project to be considered.
+        non_poly_objects_buffer (int): The maximum area of the project to be considered (e.g. roads)
+    """
+
+    def __init__(
+        self,
+        default_floors: int,
+        living_area_coef: float,
+        metres_per_human: int,
+        medium_speed: int,
+        non_poly_objects_buffer: int,
+    ):
+        """
+        Initialise the data parser.
+        Args:
+            default_floors (int): The default floor number of the project.
+            living_area_coef (float): The maximum area of the project to be considered. 0.0 < living_area_coef < 1.0.
+            metres_per_human (int): The maximum area of the project to be considered.
+            medium_speed (int): The medium speed of the project to be considered.
+            non_poly_objects_buffer (int): The maximum area of the project to be considered (e.g. roads)
+        Returns:
+            None
+        """
+
+        self.default_floors = default_floors
+        self.living_area_coef = living_area_coef
+        self.metres_per_human = metres_per_human
+        self.medium_speed = medium_speed
+        self.non_poly_objects_buffer = non_poly_objects_buffer
 
     @staticmethod
     def parse_living_buildings(living_buildings: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -33,18 +70,16 @@ class DataParser:
         living_buildings_gdf = living_buildings.set_index(
             "physical_object_id", drop=True
         )
-        unique_object_keys = list(
-            set(
-                np.reshape(
-                    living_buildings["physical_objects"].apply(
-                        lambda x: x[0]["building"].keys() if x[0]["building"] else None
-                    ),
-                    -1,
-                )
+        unique_object_keys = set(
+            np.reshape(
+                living_buildings["physical_objects"].apply(
+                    lambda x: x[0]["building"].keys() if x[0]["building"] else None
+                ),
+                -1,
             )
         )
         if "floors" not in unique_object_keys:
-            living_buildings_gdf["floors"] = 3
+            living_buildings_gdf["floors"] = DEFAULT_FLOORS
         else:
             living_buildings_gdf["floors"] = living_buildings_gdf[
                 "physical_objects"
@@ -191,4 +226,10 @@ class DataParser:
         return await asyncio.to_thread(self.parse_objects, objects, profile_id)
 
 
-data_parser = DataParser()
+data_parser = DataParser(
+    int(config.get("DEFAULT_FLOORS")),
+    float(config.get("LIVING_AREA_COEF")),
+    int(config.get("METRES_PER_HUMAN")),
+    int(config.get("MEDIUM_SPEED")),
+    int(config.get("NON_POLY_OBJECTS_BUFFER")),
+)
