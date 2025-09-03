@@ -7,11 +7,12 @@ from sirtep.sirtep_dataclasses.scheduler_dataclasses import ProvisionSchedulerDa
 
 from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.exceptions.http_exception_wrapper import http_exception
-from app.dependencies import urban_api_gateway
+from app.common.parsing.sirtep_data_parser import SirtepDataParser
+from app.dependencies import sirtep_parser, urban_api_gateway
 
 from .dto import SchedulerDTO
 from .mappings import PROFILE_OBJ_PRIORITY_MAP
-from .modules import data_parser, matrix_builder
+from .modules import matrix_builder
 from .schema import (
     SchedulerOptimizaionSchema,
     SchedulerProvisionSchema,
@@ -24,9 +25,26 @@ PRIORITY_PROFILES = [3, 4, 5, 6, 7, 9]
 
 
 class SirtepService:
+    """
+    Class for running sirtep functions and handling results.
 
-    def __init__(self, urban_api_gateway: UrbanAPIClient):
+    Attributes:
+        urban_api_gateway (UrbanAPIClient): Urban API client
+        parser (SirtepDataParser): Sirtep data parser for Urban API data
+    """
+
+    def __init__(self, urban_api_gateway: UrbanAPIClient, parser: SirtepDataParser):
+        """
+        Initializes SirtepService.
+        Args:
+            urban_api_gateway (UrbanAPIClient): Urban API client
+            parser (SirtepDataParser): Sirtep data parser
+        Returns:
+            None
+        """
+
         self.urban_api_gateway = urban_api_gateway
+        self.parser = parser
 
     async def collect_project_data(
         self, scenario_id: int, territory_id: int, token: str | None = None
@@ -43,7 +61,7 @@ class SirtepService:
         buildings: gpd.GeoDataFrame,
         services: gpd.GeoDataFrame,
         normative: gpd.GeoDataFrame,
-    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, pd.DataFrame]:
+    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
         """
         Function parses all retrieved data in appropriate format
         Args:
@@ -51,12 +69,12 @@ class SirtepService:
             services (gpd.GeoDataFrame): Services data
             normative (gpd.GeoDataFrame): Normative data
         Returns:
-            tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, pd.DataFrame]: parsed buildings, services and normative data
+            tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]: parsed buildings, services with normative data
         """
 
         tasks = [
-            data_parser.async_parse_living_buildings(buildings),
-            data_parser.async_parse_services(services, normative),
+            self.parser.async_parse_living_buildings(buildings),
+            self.parser.async_parse_services(services, normative),
         ]
         return await asyncio.gather(*tasks)
 
@@ -109,7 +127,7 @@ class SirtepService:
             objects = await urban_api_gateway.get_physical_objects(
                 params.scenario_id, PROFILE_OBJ_PRIORITY_MAP[params.profile_id]
             )
-            objects = await data_parser.async_parse_objects(objects, params.profile_id)
+            objects = await self.parser.async_parse_objects(objects, params.profile_id)
             schedule: pd.DataFrame = await asyncio.to_thread(
                 optimize_building_schedule,
                 objects,
@@ -128,4 +146,4 @@ class SirtepService:
         )
 
 
-sirtep_service = SirtepService(urban_api_gateway)
+sirtep_service = SirtepService(urban_api_gateway, sirtep_parser)
