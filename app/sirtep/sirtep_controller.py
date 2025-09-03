@@ -3,12 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.common.auth.auth import verify_token
+from app.dependencies import sirtep_service
 
 from .dto import SchedulerDTO
 from .schema import (
     SchedulerOptimizaionSchema,
 )
-from .sirtep_service import sirtep_service
 
 sirtep_router = APIRouter(prefix="/optimize", tags=["OPTIMIZATION"])
 

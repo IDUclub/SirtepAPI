@@ -8,7 +8,6 @@ from sirtep.sirtep_dataclasses.scheduler_dataclasses import ProvisionSchedulerDa
 from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.exceptions.http_exception_wrapper import http_exception
 from app.common.parsing.sirtep_data_parser import SirtepDataParser
-from app.dependencies import sirtep_parser, urban_api_gateway
 
 from .dto import SchedulerDTO
 from .mappings import PROFILE_OBJ_PRIORITY_MAP
@@ -90,7 +89,9 @@ class SirtepService:
             SchedulerOptimizaionSchema: schema with optimization results
         """
 
-        scenario_data = await urban_api_gateway.get_scenario_info(params.scenario_id)
+        scenario_data = await self.urban_api_gateway.get_scenario_info(
+            params.scenario_id
+        )
         if params.profile_id in PROVISION_PROFILES:
             buildings, services, normative = await self.collect_project_data(
                 params.scenario_id, scenario_data["project"]["region"]["id"], token
@@ -124,7 +125,7 @@ class SirtepService:
             )
             return SchedulerOptimizaionSchema(provision=scheduler_dto, simple=None)
         elif params.profile_id in PRIORITY_PROFILES:
-            objects = await urban_api_gateway.get_physical_objects(
+            objects = await self.urban_api_gateway.get_physical_objects(
                 params.scenario_id, PROFILE_OBJ_PRIORITY_MAP[params.profile_id]
             )
             objects = await self.parser.async_parse_objects(objects, params.profile_id)
@@ -144,6 +145,3 @@ class SirtepService:
             _input={"profile_id": params.profile_id},
             _detail={"available_profiles": PROVISION_PROFILES + PRIORITY_PROFILES},
         )
-
-
-sirtep_service = SirtepService(urban_api_gateway, sirtep_parser)
