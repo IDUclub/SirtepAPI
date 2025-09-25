@@ -1,4 +1,5 @@
 import asyncio
+from math import floor
 
 import geopandas as gpd
 import pandas as pd
@@ -114,8 +115,12 @@ class SirtepService:
             scheduler_dto = SchedulerProvisionSchema(
                 house_construction_period=schedule.house_construction_period.to_dict(),
                 service_construction_period=schedule.service_construction_period.to_dict(),
-                houses_per_period=schedule.houses_per_period.tolist(),
-                services_per_period=schedule.services_per_period.tolist(),
+                houses_per_period=[
+                    floor(i) for i in schedule.houses_per_period.tolist()
+                ],
+                services_per_period=[
+                    floor(i) for i in schedule.services_per_period.tolist()
+                ],
                 houses_area_per_period=schedule.houses_area_per_period.tolist(),
                 services_area_per_period=schedule.services_area_per_period.tolist(),
                 provided_per_period=schedule.provided_per_period,
