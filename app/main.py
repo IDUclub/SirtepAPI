@@ -10,7 +10,7 @@ from app.system_router.system_controller import system_router
 app = FastAPI(
     title="Sertep API",
     description="API for scheduling project construction",
-    version="0.1.0",
+    version="0.1.1",
 )
 
 origins = ["*"]
