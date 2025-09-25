@@ -112,8 +112,6 @@ class SirtepService:
                 verbose=False,
             )
             scheduler_dto = SchedulerProvisionSchema(
-                x=schedule.x_val.tolist(),
-                y=schedule.y_val.tolist(),
                 house_construction_period=schedule.house_construction_period.to_dict(),
                 service_construction_period=schedule.service_construction_period.to_dict(),
                 houses_per_period=schedule.houses_per_period.tolist(),
