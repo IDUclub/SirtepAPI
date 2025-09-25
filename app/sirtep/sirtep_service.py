@@ -120,6 +120,22 @@ class SirtepService:
                 services_area_per_period=schedule.services_area_per_period.tolist(),
                 provided_per_period=schedule.provided_per_period,
                 periods=schedule.periods.tolist(),
+                buildings_comment=(
+                    """Ни одно здание не будет построено. Увеличьте темпы строительства или количество периодов"""
+                    if not [
+                        i for i in schedule.house_construction_period if not pd.isna(i)
+                    ]
+                    else None
+                ),
+                services_comment=(
+                    """Ни одно здание не будет построено. Увеличьте темпы строительства или количество периодов"""
+                    if not [
+                        i
+                        for i in schedule.service_construction_period
+                        if not pd.isna(i)
+                    ]
+                    else None
+                ),
             )
             return SchedulerOptimizaionSchema(provision=scheduler_dto, simple=None)
         elif params.profile_id in PRIORITY_PROFILES:

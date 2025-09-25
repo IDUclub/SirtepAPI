@@ -11,6 +11,8 @@ class SchedulerProvisionSchema(BaseModel):
     services_area_per_period: list[float | None]
     provided_per_period: list[float | None]
     periods: list[int | None]
+    buildings_comment: str | None
+    services_comment: str | None
 
 
 class SchedulerSimpleSchema(BaseModel):
