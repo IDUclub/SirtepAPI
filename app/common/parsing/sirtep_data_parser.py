@@ -99,7 +99,7 @@ class SirtepDataParser:
             gpd.GeoDataFrame: parsed services gdf
         """
 
-        services_gdf = services.set_index("service_id", drop=True)
+        services_gdf = services.copy()
         services_gdf["service_area"] = services_gdf.to_crs(
             services_gdf.estimate_utm_crs()
         ).area.copy()
@@ -144,7 +144,7 @@ class SirtepDataParser:
             * 1000
             / services_gdf["services_capacity_per_1000_normative"]
         )
-        return services_gdf
+        return services_gdf.set_index("service_id", drop=True)
 
     async def async_parse_services(
         self, services: gpd.GeoDataFrame, normative: pd.DataFrame
@@ -168,6 +168,7 @@ class SirtepDataParser:
         before input.
         Args:
             objects (gpd.GeoDataFrame): raw objects gdf
+            profile_id (int): profile id
         Returns:
             gpd.GeoDataFrame: parsed objects gdf
         """
