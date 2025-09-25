@@ -3,8 +3,6 @@ from pydantic import BaseModel
 
 class SchedulerProvisionSchema(BaseModel):
 
-    x: list[list[float | None]]
-    y: list[list[float | None]]
     house_construction_period: dict
     service_construction_period: dict
     houses_per_period: list[float | None]
@@ -13,6 +11,8 @@ class SchedulerProvisionSchema(BaseModel):
     services_area_per_period: list[float | None]
     provided_per_period: list[float | None]
     periods: list[int | None]
+    buildings_comment: str | None
+    services_comment: str | None
 
 
 class SchedulerSimpleSchema(BaseModel):

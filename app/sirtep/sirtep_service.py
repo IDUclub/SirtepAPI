@@ -1,4 +1,5 @@
 import asyncio
+from math import floor
 
 import geopandas as gpd
 import pandas as pd
@@ -112,16 +113,34 @@ class SirtepService:
                 verbose=False,
             )
             scheduler_dto = SchedulerProvisionSchema(
-                x=schedule.x_val.tolist(),
-                y=schedule.y_val.tolist(),
                 house_construction_period=schedule.house_construction_period.to_dict(),
                 service_construction_period=schedule.service_construction_period.to_dict(),
-                houses_per_period=schedule.houses_per_period.tolist(),
-                services_per_period=schedule.services_per_period.tolist(),
+                houses_per_period=[
+                    floor(i) for i in schedule.houses_per_period.tolist()
+                ],
+                services_per_period=[
+                    floor(i) for i in schedule.services_per_period.tolist()
+                ],
                 houses_area_per_period=schedule.houses_area_per_period.tolist(),
                 services_area_per_period=schedule.services_area_per_period.tolist(),
                 provided_per_period=schedule.provided_per_period,
                 periods=schedule.periods.tolist(),
+                buildings_comment=(
+                    """Ни одно здание не будет построено. Увеличьте темпы строительства или количество периодов"""
+                    if not [
+                        i for i in schedule.house_construction_period if not pd.isna(i)
+                    ]
+                    else None
+                ),
+                services_comment=(
+                    """Ни одно здание не будет построено. Увеличьте темпы строительства или количество периодов"""
+                    if not [
+                        i
+                        for i in schedule.service_construction_period
+                        if not pd.isna(i)
+                    ]
+                    else None
+                ),
             )
             return SchedulerOptimizaionSchema(provision=scheduler_dto, simple=None)
         elif params.profile_id in PRIORITY_PROFILES:
