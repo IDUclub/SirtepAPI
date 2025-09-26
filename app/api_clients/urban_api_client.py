@@ -53,7 +53,12 @@ class UrbanAPIClient:
         )
         if response["features"]:
             return gpd.GeoDataFrame.from_features(response, crs=4326)
-        return gpd.GeoDataFrame()
+        raise http_exception(
+            400,
+            "No living buildings found in scenario project data",
+            _input={"scenario_id": scenario_id},
+            _detail=None,
+        )
 
     async def get_scenario_services(
         self,
