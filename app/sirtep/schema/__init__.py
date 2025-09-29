@@ -1,5 +1,5 @@
 from .scheduler_schema import (
-    SchedulerOptimizaionSchema,
+    SchedulerOptimizationSchema,
     SchedulerProvisionSchema,
     SchedulerSimpleSchema,
 )
