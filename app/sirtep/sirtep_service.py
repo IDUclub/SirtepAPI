@@ -14,7 +14,7 @@ from .dto import SchedulerDTO
 from .mappings import PROFILE_OBJ_PRIORITY_MAP
 from .modules import matrix_builder
 from .schema import (
-    SchedulerOptimizaionSchema,
+    SchedulerOptimizationSchema,
     SchedulerProvisionSchema,
     SchedulerSimpleSchema,
 )
@@ -80,14 +80,14 @@ class SirtepService:
 
     async def calculate_schedule(
         self, params: SchedulerDTO, token: str
-    ) -> SchedulerOptimizaionSchema:
+    ) -> SchedulerOptimizationSchema:
         """
         Function to calculate construction schedule
         Args:
             params (SchedulerDTO): basic scheduler data request info
             token (str): token to authenticate with urban api
         Returns:
-            SchedulerOptimizaionSchema: schema with optimization results
+            SchedulerOptimizationSchema: schema with optimization results
         """
 
         scenario_data = await self.urban_api_gateway.get_scenario_info(
@@ -142,7 +142,7 @@ class SirtepService:
                     else None
                 ),
             )
-            return SchedulerOptimizaionSchema(provision=scheduler_dto, simple=None)
+            return SchedulerOptimizationSchema(provision=scheduler_dto, simple=None)
         elif params.profile_id in PRIORITY_PROFILES:
             objects = await self.urban_api_gateway.get_physical_objects(
                 params.scenario_id, PROFILE_OBJ_PRIORITY_MAP[params.profile_id]
@@ -157,7 +157,7 @@ class SirtepService:
             scheduler_dto = SchedulerSimpleSchema(
                 **schedule.rename(columns={"name": "id"}).to_dict(orient="list")
             )
-            return SchedulerOptimizaionSchema(provision=None, simple=scheduler_dto)
+            return SchedulerOptimizationSchema(provision=None, simple=scheduler_dto)
         raise http_exception(
             400,
             msg="Profile id is not supported",
