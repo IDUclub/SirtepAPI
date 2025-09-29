@@ -14,7 +14,14 @@ class SchedulerProvisionSchema(BaseModel):
     buildings_comment: str | None
     services_comment: str | None
 
-    @field_validator("houses_per_period", "services_per_period", "houses_area_per_period", "services_area_per_period", "provided_per_period", mode="before")
+    @field_validator(
+        "houses_per_period",
+        "services_per_period",
+        "houses_area_per_period",
+        "services_area_per_period",
+        "provided_per_period",
+        mode="before",
+    )
     @classmethod
     def round_values(cls, value: list[float | None]) -> list[float | None]:
         """
