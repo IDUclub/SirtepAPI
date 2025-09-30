@@ -83,7 +83,7 @@ class UrbanAPIClient:
         if response["features"]:
             result = gpd.GeoDataFrame.from_features(response, crs=4326)
             if service_type_ids:
-                result = result[result["service_type_ud"].isin(service_type_ids)].copy()
+                result = result[result["service_type_id"].isin(service_type_ids)].copy()
             return result
         else:
             return None
