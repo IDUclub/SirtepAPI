@@ -1,4 +1,4 @@
-sirtep~=0.1.0
+sirtep~=0.2.0
 numpy~=2.3.2
 pandas~=2.3.2
 scipy~=1.16.1

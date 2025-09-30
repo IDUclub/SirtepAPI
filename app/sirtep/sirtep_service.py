@@ -100,6 +100,9 @@ class SirtepService:
             buildings, services = await self.parse_project_data(
                 buildings, services, normative
             )
+            services = services.sjoin(
+                buildings.reset_index()[["geometry", "physical_object_id"]], how="left"
+            )
             binary_access_matrix = await matrix_builder.async_build_distance_matrix(
                 buildings, services
             )
