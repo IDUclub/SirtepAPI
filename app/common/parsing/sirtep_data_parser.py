@@ -144,6 +144,7 @@ class SirtepDataParser:
             * 1000
             / services_gdf["services_capacity_per_1000_normative"]
         )
+        services_gdf["geometry"] = services.representative_point()
         return services_gdf.set_index("service_id", drop=True)
 
     async def async_parse_services(
