@@ -18,6 +18,6 @@ configure_logger(
 )
 
 urban_api_json_handler = JSONAPIHandler(config.get("URBAN_API"))
-urban_api_gateway = UrbanAPIClient(urban_api_json_handler)
+urban_api_client = UrbanAPIClient(urban_api_json_handler)
 sirtep_parser = SirtepDataParser(config)
-sirtep_service = SirtepService(urban_api_gateway, sirtep_parser)
+sirtep_service = SirtepService(urban_api_client, sirtep_parser)
