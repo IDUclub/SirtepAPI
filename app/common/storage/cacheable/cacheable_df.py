@@ -24,19 +24,28 @@ class CacheableDF(Cacheable):
             raise TypeError(f"Object {df} is not a pandas DataFrame")
         self.df = df
 
-    def write(self, path: Path) -> Path:
+    def to_file(
+        self, path: Path, name: str, ext: str, date: str, separator: str, *args
+    ) -> Path:
         """
         Function caches DataFrame to parquet file.
         Args:
-            path (Path): path to cache file
+            path (Path): path to cache fileб
+            name (str): name of cached file
+            ext (str): extension of cached file
+            date (str): date of cached file
+            separator (str): separator between cached file
+            *args: additional arguments
         Returns:
             Path: path to cached file
         Raises:
             SystemError: if error occurs during caching
         """
 
+        file_name_list = [date, name] + [arg for arg in args]
+        file_path = path / separator.join(file_name_list)
         try:
-            self.df.to_parquet(path)
+            self.df.to_parquet(file_path)
             return path
         except Exception as e:
             raise SystemError(
@@ -44,11 +53,12 @@ class CacheableDF(Cacheable):
             ) from e
 
     @staticmethod
-    def read(path: Path) -> pd.DataFrame:
+    def from_file(path: Path, name: str) -> pd.DataFrame:
         """
         Function reads DataFrame from parquet file.
         Args:
             path (Path): path to cache file
+            name (str): name of cached file
         Returns:
             pd.DataFrame: DataFrame read from cache file
         Raises:
@@ -56,6 +66,6 @@ class CacheableDF(Cacheable):
         """
 
         try:
-            return pd.read_parquet(path)
+            return pd.read_parquet(path / name)
         except Exception as e:
             raise SystemError(f"Error reading parquet file with path {path}") from e
