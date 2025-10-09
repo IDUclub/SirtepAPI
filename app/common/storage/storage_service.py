@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal
 
 import pandas as pd
+from iduconfig import Config
 
 from app.common.exceptions.http_exception_wrapper import http_exception
 
@@ -11,18 +12,20 @@ from .caching.parquet_caching_service import ParquetCachingService
 class StorageService:
     """
     Storage service class for data caching and retrieval
-    Args:
-        feather_caching_service (FeatherCachingService): service for caching and retrieving data in feather format
+    Attributes:
+        config (Config): instance of Config class from iduconfig
+        parquet_caching_service (ParquetCachingService): service for caching and retrieving data in feather format
     """
 
-    def __init__(self, feather_caching_service: ParquetCachingService):
+    def __init__(self, config: Config, parquet_caching_service: ParquetCachingService):
         """
         Initializes StorageService.
         Args:
-            feather_caching_service (FeatherCachingService): service for caching and retrieving data in feather format
+            config (Config): instance of Config class from iduconfig
+            parquet_caching_service (ParquetCachingService): service for caching and retrieving data in feather format
         """
-
-        self.feather_caching_service = feather_caching_service
+        self.config = config
+        self.parquet_caching_service = parquet_caching_service
 
     def cache_df(self, df: pd.DataFrame, extension: Literal["parquet"], *args) -> Path:
         """
@@ -39,7 +42,7 @@ class StorageService:
 
         if extension == "parquet":
             try:
-                return self.feather_caching_service.cache_df(df, *args)
+                return self.parquet_caching_service.cache_df(df, *args)
             except Exception as e:
                 raise http_exception(
                     500,
@@ -48,9 +51,6 @@ class StorageService:
                     _detail={"error": repr(e)},
                 ) from e
         else:
-            raise http_exception(
-                500,
-                f"Unsupported file extension for caching: {extension}",
-                _input={"args": args, "extension": extension},
-                _detail={"supported_extensions": ["parquet"]},
+            raise NotImplementedError(
+                f"Unsupported file extension: {repr(extension)}, only parquet is supported for caching"
             )

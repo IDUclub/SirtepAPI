@@ -9,6 +9,7 @@ from sirtep.sirtep_dataclasses.scheduler_dataclasses import ProvisionSchedulerDa
 from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.exceptions.http_exception_wrapper import http_exception
 from app.common.parsing.sirtep_data_parser import SirtepDataParser
+from app.common.storage.storage_service import StorageService
 
 from .dto import SchedulerDTO
 from .mappings import PROFILE_OBJ_PRIORITY_MAP
@@ -33,18 +34,28 @@ class SirtepService:
         parser (SirtepDataParser): Sirtep data parser for Urban API data
     """
 
-    def __init__(self, urban_api_gateway: UrbanAPIClient, parser: SirtepDataParser):
+    def __init__(
+        self,
+        urban_api_gateway: UrbanAPIClient,
+        parser: SirtepDataParser,
+        matrix_storage_service: StorageService,
+        provision_storage_service: StorageService,
+    ):
         """
         Initializes SirtepService.
         Args:
             urban_api_gateway (UrbanAPIClient): Urban API client
             parser (SirtepDataParser): Sirtep data parser
+            matrix_storage_service (StorageService): Matrix storage service with matrix_cache_path
+            provision_storage_service (StorageService): Provision storage service with provision_cache_path
         Returns:
             None
         """
 
         self.urban_api_gateway = urban_api_gateway
         self.parser = parser
+        self.matrix_storage_service = matrix_storage_service
+        self.provision_storage_service = provision_storage_service
 
     async def collect_project_data(
         self, scenario_id: int, territory_id: int, token: str | None = None
