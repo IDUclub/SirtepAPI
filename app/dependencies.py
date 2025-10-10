@@ -6,6 +6,7 @@ from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.api_handlers.json_api_handler import JSONAPIHandler
 from app.common.logging.logger_conf import configure_logger
 from app.common.parsing.sirtep_data_parser import SirtepDataParser
+from app.common.sceduler.sceduler import Scheduler
 from app.common.storage.sirtep_storage import SirtepStorage
 from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
@@ -47,3 +48,5 @@ task_service = TaskService()
 sirtep_service = SirtepService(
     urban_api_client, sirtep_parser, storage_service, task_service
 )
+scheduler = Scheduler(config)
+scheduler.add_job(storage_service.delete_irrelevant_cache, "interval")
