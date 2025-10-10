@@ -6,5 +6,6 @@ build.sh
 venv/
 .venv/
 /data
+__cache__/
 **.parquet
 **.feather

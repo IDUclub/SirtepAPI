@@ -42,14 +42,14 @@ class CacheableDF(Cacheable):
             SystemError: if error occurs during caching
         """
 
-        file_name_list = [date, name] + [arg for arg in args]
-        file_path = path / separator.join(file_name_list)
+        file_name_list = [date, name, *[str(arg) for arg in args]]
+        file_path = path / f"{separator.join(file_name_list)}{ext}"
         try:
             self.df.to_parquet(file_path)
             return path
         except Exception as e:
             raise SystemError(
-                f"Error caching DataFrame with cache_path {repr(path)}"
+                f"Error caching DataFrame with cache_path {repr(path)} with error {repr(e)}"
             ) from e
 
     @staticmethod

@@ -21,6 +21,7 @@ class TaskService:
                 task_progress=0.0,
             )
             self.tasks[task.task_id] = task
+
             return task.task_id
         raise NotImplementedError(f"Task {name} not implemented")
 

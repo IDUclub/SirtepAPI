@@ -3,10 +3,10 @@ from typing import Literal
 
 import pandas as pd
 from iduconfig import Config
-from idustorage import Storage
 from pydantic import BaseModel
 
 from .cacheable import CacheableDF, CacheablePydantic
+from .sirtep_storage import SirtepStorage
 
 
 class StorageService:
@@ -20,9 +20,9 @@ class StorageService:
     def __init__(
         self,
         config: Config,
-        matrix_storage: Storage,
-        response_storage: Storage,
-        provision_storage: Storage,
+        matrix_storage: SirtepStorage,
+        response_storage: SirtepStorage,
+        provision_storage: SirtepStorage,
     ):
         """
         Initializes StorageService.
@@ -40,13 +40,13 @@ class StorageService:
 
     def get_storage(
         self, dt_type: Literal["matrix", "provision", "response"]
-    ) -> Storage:
+    ) -> SirtepStorage:
         """
         Retrieves the appropriate storage based on the DataFrame type.
         Args:
             dt_type (Literal["matrix", "provision", "response"]): Type of DataFrame to check
         Returns:
-            Storage: Corresponding storage instance
+            SirtepStorage: Corresponding storage instance
         """
 
         match dt_type:
@@ -82,25 +82,26 @@ class StorageService:
             raise NotImplementedError(f"DataFrame type {dt_type} not implemented")
 
     def store_df(
-        self, matrix: pd.DataFrame, df_type: Literal["matrix", "provision"], *args
+        self, df: pd.DataFrame, df_type: Literal["matrix", "provision"], *args
     ) -> str:
         """
         Stores a DataFrame as a cached file.
         Args:
-            matrix (pd.DataFrame): DataFrame to be cached
+            df (pd.DataFrame): DataFrame to be cached
             df_type (Literal["matrix", "provision"]): Type of DataFrame to be cached
             *args: additional arguments for file naming (expecting request params)
         Returns:
             str: path to cached file
         """
 
+        storage = self.get_storage(df_type)
         if df_type == "matrix":
-            cacheable = CacheableDF(matrix)
+            cacheable = CacheableDF(df)
         elif df_type == "provision":
-            cacheable = CacheableDF(matrix)
+            cacheable = CacheableDF(df)
         else:
             raise NotImplementedError(f"DataFrame type {df_type} not implemented")
-        return self.matrix_storage.save(
+        return storage.save(
             cacheable,
             df_type,
             ".parquet",
@@ -161,7 +162,7 @@ class StorageService:
             )
         return None
 
-    def get_storage_irrelevant_cache(self, storage: Storage) -> list[str]:
+    def get_storage_irrelevant_cache(self, storage: SirtepStorage) -> list[str]:
         """
         Retrieves a list of irrelevant cached files from the given storage.
         Args:
@@ -193,7 +194,9 @@ class StorageService:
             None
         """
 
-        for storage in [i for i in self.__dict__.values() if isinstance(i, Storage)]:
+        for storage in [
+            i for i in self.__dict__.values() if isinstance(i, SirtepStorage)
+        ]:
             irrelevant_files = self.get_storage_irrelevant_cache(storage)
             for file_name in irrelevant_files:
                 try:

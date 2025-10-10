@@ -45,8 +45,8 @@ class CacheablePydantic(Cacheable):
             SystemError: if error occurs during caching
         """
 
-        file_name_list = [date, name] + [arg for arg in args]
-        file_path = path / separator.join(file_name_list)
+        file_name_list = [date, name, *[str(arg) for arg in args]]
+        file_path = path / f"{separator.join(file_name_list)}{ext}"
 
         try:
             with open(file_path, "wb") as f:
@@ -71,7 +71,7 @@ class CacheablePydantic(Cacheable):
         """
 
         try:
-            with open(path, "rb") as f:
+            with open(path / name, "rb") as f:
                 return pickle.load(f)
         except Exception as e:
             raise SystemError(

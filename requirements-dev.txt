@@ -14,4 +14,5 @@ uvicorn~=0.35.0
 highspy~=1.11.0
 idustorage~=1.1.1
 APScheduler~=3.11.0
+pyarrow~=21.0.0
 pre-commit~=4.3.0
