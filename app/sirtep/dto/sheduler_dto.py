@@ -26,3 +26,6 @@ class SchedulerDTO(BaseModel):
     max_area_per_period: int = Field(
         ge=0, description="Construction speed for scenario"
     )
+
+    def request_params_as_list(self):
+        return list(self.model_dump().values())
