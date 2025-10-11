@@ -8,3 +8,5 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 80:80
+    volumes:
+      - cache:/app/__cache__
