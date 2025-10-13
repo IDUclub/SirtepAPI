@@ -79,7 +79,7 @@ class SirtepService:
         buildings: gpd.GeoDataFrame,
         services: gpd.GeoDataFrame,
         normative: pd.DataFrame,
-    ) -> [gpd.GeoDataFrame, gpd.GeoDataFrame]:
+    ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
         """
         Function parses all retrieved data in appropriate format
         Args:
@@ -94,7 +94,7 @@ class SirtepService:
             self.parser.async_parse_living_buildings(buildings),
             self.parser.async_parse_services(services, normative),
         ]
-        return await asyncio.gather(*tasks)
+        return tuple(await asyncio.gather(*tasks))
 
     async def calculate_provision(
         self,
@@ -136,8 +136,6 @@ class SirtepService:
 
         # iterating over all periods
         for period in range(num_periods):
-            if period == 39:
-                print(period)
             # data for current period (buiuldings, services, matrix)
             b_period_ids, s_period_ids = [
                 df[df["period"] <= period]["id"].to_list() for df in (b_df, s_df)

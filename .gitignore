@@ -215,3 +215,6 @@ __marimo__/
 
 # cache
 __cache__/
+
+#VSCode
+.vscode/

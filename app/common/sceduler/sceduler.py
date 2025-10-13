@@ -2,6 +2,9 @@ from typing import Callable, Literal
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from iduconfig import Config
+from loguru import logger
+
+from .entities import JobType
 
 
 class Scheduler:
@@ -22,15 +25,31 @@ class Scheduler:
         self.scheduler = BackgroundScheduler()
         self.config = config
 
-    async def add_job(self, func: Callable, job_type: Literal["interval"]) -> None:
+    async def add_job(self, func: Callable, job_type: JobType) -> None:
+        """
+        Function adds a scheduler job to scheduler from BackgroundScheduler
+        Args:
+            func (Callable): func to add to scheduler
+            job_type (JobType): _description_
+        """
 
         try:
             self.scheduler.add_job(
                 func, job_type, minutes=int(self.config.get("ACTUALITY"))
             )
         except Exception as e:
+            logger.error(e)
             raise e
 
     async def start(self):
+        """
+        Function runs dceduler
+        Raises:
+            e: any exception from sceduler
+        """
 
-        await self.scheduler.start()
+        try:
+            await self.scheduler.start()
+        except Exception as e:
+            logger.error(e)
+            raise e

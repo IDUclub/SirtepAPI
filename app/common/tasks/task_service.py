@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from .entities import ProvisionTask
 
@@ -11,6 +11,17 @@ class TaskService:
         self.tasks = {}
 
     def create_task(self, name: Literal["tep"], *args: str):
+        """
+        Function creates task for given type
+        Args:
+            name (Literal[&quot;tep&quot;]): _description_
+
+        Raises:
+            NotImplementedError: _description_
+
+        Returns:
+            _type_: _description_
+        """
 
         if name == "tep":
             task = ProvisionTask(
@@ -25,30 +36,31 @@ class TaskService:
             return task.task_id
         raise NotImplementedError(f"Task {name} not implemented")
 
-    def set_task_attribute(
+    def __set_task_attribute__(
         self,
         task_id: str,
         attribute: str,
-        value: (
-            Literal["in_queue", "pending", "completed", "failed"]
-            | float
-            | int
-            | str
-            | dict
-        ),
+        value: Any,
     ):
+        """
+        Function sets task attribute to given value
 
-        if attribute == "task_id":
-            raise AttributeError("Cannot modify task_id attribute")
-        if task_id in self.tasks:
-            if hasattr(self.tasks[task_id], attribute):
-                setattr(self.tasks[task_id], attribute, value)
-            else:
-                raise AttributeError(
-                    f"Attribute {attribute} not found in task {task_id}"
-                )
-        else:
+        Args:
+            task_id (str): unique task id
+            attribute (str): name of attribute to be set
+            value (Any): attribute value to set to
+
+        Raises:
+            KeyError: if task id not found in tasks
+            AttributeError: if task doesn't have provided task id
+        """
+
+        if task_id not in self.tasks:
             raise KeyError(f"Task {task_id} not found")
+        if hasattr(self.tasks[task_id], attribute):
+            setattr(self.tasks[task_id], attribute, value)
+        else:
+            raise AttributeError(f"Attribute {attribute} not found in task {task_id}")
 
     def get_task(self, task_id: str) -> ProvisionTask:
 
