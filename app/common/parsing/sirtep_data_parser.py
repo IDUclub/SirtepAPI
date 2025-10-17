@@ -47,11 +47,12 @@ class SirtepDataParser:
             "physical_object_id", drop=True
         )
         unique_object_keys = set(
-            np.reshape(
+            np.hstack(
                 living_buildings["physical_objects"].apply(
-                    lambda x: x[0]["building"].keys() if x[0]["building"] else None
+                    lambda x: (
+                        list(x[0]["building"].keys()) if x[0]["building"] else None
+                    )
                 ),
-                -1,
             )
         )
         if "floors" not in unique_object_keys:
@@ -59,7 +60,7 @@ class SirtepDataParser:
         else:
             living_buildings_gdf["floors"] = living_buildings_gdf[
                 "physical_objects"
-            ].apply(lambda x: x["floors"])
+            ].apply(lambda x: x[0]["building"].get("floors"))
             living_buildings_gdf["floors"] = living_buildings_gdf["floors"].fillna(
                 living_buildings_gdf["floors"].mean()
             )
