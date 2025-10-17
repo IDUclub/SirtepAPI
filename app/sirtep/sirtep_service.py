@@ -128,7 +128,7 @@ class SirtepService:
         result_df = pd.DataFrame(columns=service_types, index=range(num_periods))
         total_to_process = len(buildings_built_periods) * len(service_types)
         processed = 0
-        self.task_service.set_task_attribute(task_id, "status", "pending")
+        self.task_service.set_task_status(task_id, "pending")
         b_df, s_df = [
             pd.DataFrame(i.items(), columns=["id", "period"]).dropna(subset=["period"])
             for i in (buildings_built_periods, services_built_periods)
@@ -186,23 +186,22 @@ class SirtepService:
 
                 # updating task progress
                 processed += 1
-                self.task_service.set_task_attribute(
+                self.task_service.set_task_progress(
                     task_id,
-                    "task_progress",
                     round(processed / total_to_process * 100, 2),
                 )
 
         self.storage_service.store_df(result_df, "provision", *args)
-        self.task_service.set_task_attribute(task_id, "status", "completed")
+        self.task_service.set_task_status(task_id, "complete d")
 
-    async def check_generation(self, last_scenario_update: str, *args) -> bool | str:
+    async def check_generation(self, last_scenario_update: str, *args) -> str:
         """
         Function checks if the cached response is up to date with the last scenario update
         Args:
             last_scenario_update (str): last scenario update date
             *args: request arguments for cache file naming
         Returns:
-            bool | str: True if the cached response is up to date, False otherwise
+            str: True if the cached response is up to date, False otherwise
         Raises:
             Exception: If there is an error while checking the cache
         """
@@ -215,8 +214,7 @@ class SirtepService:
             return ""
         except Exception as e:
             logger.exception(f"Exception while checking generation cache: {repr(e)}")
-            logger.error(e)
-            raise e
+            raise
 
     async def calculate_schedule(
         self, params: SchedulerDTO, token: str
@@ -306,20 +304,30 @@ class SirtepService:
             self.storage_service.store_response(scheduler_dto, *cache_args)
             task_id_params = [str(i) for i in cache_args]
             self.task_service.create_task("tep", *task_id_params)
-            asyncio.create_task(
-                self.calculate_provision(
-                    buildings,
-                    services,
-                    binary_access_matrix,
-                    scheduler_dto.house_construction_period,
-                    scheduler_dto.service_construction_period,
-                    params.periods,
-                    services["service_type_id"].unique().tolist(),
-                    "_".join(task_id_params),
-                    *cache_args,
-                )
+            # asyncio.create_task(
+            #     self.calculate_provision(
+            #         buildings,
+            #         services,
+            #         binary_access_matrix,
+            #         scheduler_dto.house_construction_period,
+            #         scheduler_dto.service_construction_period,
+            #         params.periods,
+            #         services["service_type_id"].unique().tolist(),
+            #         "_".join(task_id_params),
+            #         *cache_args,
+            #     )
+            # )
+            await self.calculate_provision(
+                buildings,
+                services,
+                binary_access_matrix,
+                scheduler_dto.house_construction_period,
+                scheduler_dto.service_construction_period,
+                params.periods,
+                services["service_type_id"].unique().tolist(),
+                "_".join(task_id_params),
+                *cache_args,
             )
-
             return SchedulerOptimizationSchema(provision=scheduler_dto, simple=None)
         elif params.profile_id in PRIORITY_PROFILES:
             objects = await self.urban_api_gateway.get_physical_objects(
@@ -379,12 +387,22 @@ class SirtepService:
                     msg=f"Оптимизация с параметрами {params.request_params_as_list()} устарела, сценарные данные были обновлены. Запустите оптимизацию заново",
                 )
             provision_df = self.storage_service.read_df("provision", *cache_args)
-            service_id_name_map = await self.urban_api_gateway.get_service_types_map()
-            provision_df.rename(columns=service_id_name_map, inplace=True)
-            return ProvisionSchema(
-                periods=[i for i in range(len(provision_df))],
-                provision=provision_df.to_dict(orient="records"),
-            )
+            if isinstance(provision_df, pd.DataFrame):
+                service_id_name_map = (
+                    await self.urban_api_gateway.get_service_types_map()
+                )
+                provision_df.rename(columns=service_id_name_map, inplace=True)
+                return ProvisionSchema(
+                    periods=[i for i in range(len(provision_df))],
+                    provision=provision_df.to_dict(orient="records"),
+                )
+            else:
+                raise http_exception(
+                    500,
+                    msg=f"Кэш с результатами оптимизации с параметрами {params.request_params_as_list()} повреждён. Попробуйте запустить оптимизацию заново",
+                    _input={"Параметры запроса": params.request_params_as_dict()},
+                    _detail=None,
+                )
         if task := self.task_service.get_task(task_id):
             if task.status == "pending":
                 return ProvisionInProgressSchema(

@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import BaseModel, model_validator
 
 
@@ -13,12 +15,9 @@ class ProvisionSchema(BaseModel):
     provision: list[dict[str, float]]
 
     @model_validator(mode="after")
-    @classmethod
-    def check_lengths(cls, model):
+    def check_lengths(self) -> Self:
         """
         Validates that the lengths of 'periods' and 'provision' lists are equal.
-        Args:
-            model (ProvisionSchema): The instance of ProvisionSchema to validate.
         Returns:
             ProvisionSchema: The validated instance.
         Raises:
@@ -26,9 +25,9 @@ class ProvisionSchema(BaseModel):
                         match.
         """
 
-        if len(model.periods) != len(model.provision):
+        if len(self.periods) != len(self.provision):
             raise ValueError("The lengths of 'periods' and 'provision' must be equal.")
-        return model
+        return self
 
 
 class ProvisionInProgressSchema(BaseModel):

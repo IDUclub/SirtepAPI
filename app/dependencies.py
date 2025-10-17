@@ -12,41 +12,15 @@ from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
 from app.sirtep.sirtep_service import SirtepService
 
-absolute_app_path = Path().absolute()
-config = Config()
-
-configure_logger(
-    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <b>{message}</b>",
-    "INFO",
-    absolute_app_path / config.get("LOG_NAME"),
-)
-
-urban_api_json_handler = JSONAPIHandler(config.get("URBAN_API"))
-urban_api_client = UrbanAPIClient(urban_api_json_handler)
-sirtep_parser = SirtepDataParser(config)
-
-matrix_storage = SirtepStorage(
-    Path().absolute() / config.get("COMMON_CACHE") / config.get("MATRIX_CACHE"), config
-)
-response_storage = SirtepStorage(
-    Path().absolute() / config.get("COMMON_CACHE") / config.get("RESPONSE_CACHE"),
-    config,
-)
-provision_storage = SirtepStorage(
-    Path().absolute() / config.get("COMMON_CACHE") / config.get("PROVISION_CACHE"),
-    config,
-)
-
-storage_service = StorageService(
-    config,
-    matrix_storage=matrix_storage,
-    response_storage=response_storage,
-    provision_storage=provision_storage,
-)
-
-task_service = TaskService()
-sirtep_service = SirtepService(
-    urban_api_client, sirtep_parser, storage_service, task_service
-)
-scheduler = Scheduler(config)
-scheduler.add_job(storage_service.delete_irrelevant_cache, "interval")
+config: Config | None = None
+log_path: Path | None = None
+urban_api_json_handler: JSONAPIHandler | None = None
+urban_api_client: UrbanAPIClient | None = None
+sirtep_parser: SirtepDataParser | None = None
+matrix_storage: SirtepStorage | None = None
+response_storage: SirtepStorage | None = None
+provision_storage: SirtepStorage | None = None
+storage_service: StorageService | None = None
+task_service: TaskService | None = None
+sirtep_service: SirtepService | None = None
+scheduler: Scheduler | None = None

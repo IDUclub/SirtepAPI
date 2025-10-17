@@ -2,8 +2,8 @@ from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends
 
+import app.dependencies as deps
 from app.common.auth.auth import verify_token
-from app.dependencies import sirtep_service
 
 from .dto import SchedulerDTO
 from .schema import (
@@ -21,7 +21,7 @@ async def get_scheduler(
     token: str = Depends(verify_token),
 ) -> SchedulerOptimizationSchema:
 
-    return await sirtep_service.calculate_schedule(params, token)
+    return await deps.sirtep_service.calculate_schedule(params, token)
 
 
 @sirtep_router.get(
@@ -32,4 +32,4 @@ async def get_teps(
     token: str = Depends(verify_token),
 ) -> ProvisionSchema | ProvisionInProgressSchema:
 
-    return await sirtep_service.get_provision_for_request(params, token)
+    return await deps.sirtep_service.get_provision_for_request(params, token)

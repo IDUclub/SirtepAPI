@@ -34,7 +34,7 @@ class SirtepStorage(Storage):
             )
         ]
         files.sort(reverse=True)
-        logger.info(f"found files for pattern {pattern} with args {args}: {files}")
+        logger.info(f"Found files for pattern {pattern} with args {args}: {files}")
         actual_filename: str = ""
         for file in files:
             broken_filename = file.split(self.separator)

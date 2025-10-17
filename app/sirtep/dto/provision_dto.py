@@ -1,7 +1,8 @@
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from app.common.exceptions.http_exception_wrapper import http_exception
 
+from .dto_constants import provision_profiles
 from .sheduler_dto import SchedulerDTO
 
 
@@ -13,9 +14,9 @@ class ProvisionDTO(SchedulerDTO):
 
     """
 
-    @field_validator("profile_id")
-    @classmethod
-    def validate_profile_id(cls, value: int) -> int:
+    @field_validator("profile_id", mode="after")
+    @staticmethod
+    def validate_profile_id(value: int) -> int:
         """
         Validates that the profile_id is greater than 0.
         Args:
@@ -25,11 +26,12 @@ class ProvisionDTO(SchedulerDTO):
         Raises:
             ValueError: If the profile_id is not greater than 0.
         """
-        if value not in (1, 2, 8):
+
+        if value not in provision_profiles:
             raise http_exception(
                 400,
                 msg="Invalid profile_id, must be one of [1, 2, 8]",
                 _input={"profile_id": value},
-                _detail={"available_profile_ids": [1, 2, 8]},
+                _detail={"available_profile_ids": provision_profiles},
             )
         return value

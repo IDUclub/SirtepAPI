@@ -14,10 +14,10 @@ class TaskStatus(StrEnum):
         FAILED (str): "failed" status, if task occured an error during execution
     """
 
-    IN_QUEUE: str = "in_queue"
-    PENDING: str = "pending"
-    COMPLETED: str = "complited"
-    FAILED: str = "failed"
+    IN_QUEUE = "in_queue"
+    PENDING = "pending"
+    COMPLETED = "complited"
+    FAILED = "failed"
 
 
 @dataclass
