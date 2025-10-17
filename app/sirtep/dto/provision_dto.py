@@ -30,7 +30,7 @@ class ProvisionDTO(SchedulerDTO):
         if value not in provision_profiles:
             raise http_exception(
                 400,
-                msg="Invalid profile_id, must be one of [1, 2, 8]",
+                msg=f"Invalid profile_id, must be one of {provision_profiles}.",
                 _input={"profile_id": value},
                 _detail={"available_profile_ids": provision_profiles},
             )
