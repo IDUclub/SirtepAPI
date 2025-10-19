@@ -304,29 +304,18 @@ class SirtepService:
             self.storage_service.store_response(scheduler_dto, *cache_args)
             task_id_params = [str(i) for i in cache_args]
             self.task_service.create_task("tep", *task_id_params)
-            # asyncio.create_task(
-            #     self.calculate_provision(
-            #         buildings,
-            #         services,
-            #         binary_access_matrix,
-            #         scheduler_dto.house_construction_period,
-            #         scheduler_dto.service_construction_period,
-            #         params.periods,
-            #         services["service_type_id"].unique().tolist(),
-            #         "_".join(task_id_params),
-            #         *cache_args,
-            #     )
-            # )
-            await self.calculate_provision(
-                buildings,
-                services,
-                binary_access_matrix,
-                scheduler_dto.house_construction_period,
-                scheduler_dto.service_construction_period,
-                params.periods,
-                services["service_type_id"].unique().tolist(),
-                "_".join(task_id_params),
-                *cache_args,
+            asyncio.create_task(
+                self.calculate_provision(
+                    buildings,
+                    services,
+                    binary_access_matrix,
+                    scheduler_dto.house_construction_period,
+                    scheduler_dto.service_construction_period,
+                    params.periods,
+                    services["service_type_id"].unique().tolist(),
+                    "_".join(task_id_params),
+                    *cache_args,
+                )
             )
             return SchedulerOptimizationSchema(provision=scheduler_dto, simple=None)
         elif params.profile_id in PRIORITY_PROFILES:

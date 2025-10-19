@@ -1,12 +1,12 @@
-from enum import Enum, unique
+from enum import StrEnum
 
 
 @unique
-class JobType(Enum):
+class JobType(StrEnum):
     """
     Enum class for scheduler job type
     Attributes:
-        interval (str): default to "interval"
+        INTERVAL (str): default to "interval"
     """
 
     INTERVAL: str = "interval"

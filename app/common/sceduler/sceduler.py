@@ -30,7 +30,7 @@ class Scheduler:
         Function adds a scheduler job to scheduler from BackgroundScheduler
         Args:
             func (Callable): func to add to scheduler
-            job_type (JobType): _description_
+            job_type (JobType): type of job to add to scheduler. Currently, supports 'interval' type only.
         """
 
         try:
