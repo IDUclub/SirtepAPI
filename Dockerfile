@@ -12,7 +12,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Enables env file
-ENV APP_ENV=development
+ENV APP_ENV=production
 ENV APP_WORKERS=1
 
 #add pypi mirror to config
