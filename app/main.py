@@ -1,13 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import RedirectResponse
 
 from app.common.exceptions.exception_handler import ExceptionHandlerMiddleware
+from app.init_entities import init_entities
 from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_entities()
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Sertep API",
     description="API for scheduling project construction",
     version="0.1.2",
