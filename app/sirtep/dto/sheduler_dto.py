@@ -26,3 +26,26 @@ class SchedulerDTO(BaseModel):
     max_area_per_period: int = Field(
         ge=0, description="Construction speed for scenario"
     )
+
+    def request_params_as_list(self) -> list[int]:
+        """
+        Converts the DTO fields to a list of their values.
+        Returns:
+            list[int]: List of DTO field values.
+        """
+
+        return [
+            self.scenario_id,
+            self.profile_id,
+            self.periods,
+            self.max_area_per_period,
+        ]
+
+    def request_params_as_dict(self) -> dict[str, int]:
+        """
+        Converts the DTO fields to a dictionary of their values.
+        Returns:
+            dict[str, int]: Dictionary of DTO field values.
+        """
+
+        return self.model_dump()

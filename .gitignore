@@ -212,3 +212,9 @@ __marimo__/
 
 # development
 *.ipynb
+
+# cache
+__cache__/
+
+#VSCode
+.vscode/

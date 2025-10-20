@@ -147,3 +147,13 @@ class UrbanAPIClient:
                 _input={"physical_object_types_ids": physical_object_types_ids},
                 _detail={"error": repr(e)},
             ) from e
+
+    async def get_service_types_map(self) -> dict[int, str]:
+        """
+        Function retrieves service types map for all services.
+        Returns:
+            dict: service types map.
+        """
+
+        response = await self.json_handler.get("api/v1/service_types")
+        return {item["service_type_id"]: item["name"] for item in response}
