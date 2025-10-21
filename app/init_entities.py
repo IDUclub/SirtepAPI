@@ -12,6 +12,7 @@ from app.common.storage.sirtep_storage import SirtepStorage
 from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
 from app.sirtep.sirtep_service import SirtepService
+from app.system_router.config.config_service import ConfigService
 
 
 async def init_entities():
@@ -30,6 +31,7 @@ async def init_entities():
         log_path=deps.log_path,
     )
 
+    deps.config_service = ConfigService(deps.config)
     deps.urban_api_json_handler = JSONAPIHandler(deps.config.get("URBAN_API"))
     deps.urban_api_client = UrbanAPIClient(deps.urban_api_json_handler)
     deps.sirtep_parser = deps.SirtepDataParser(deps.config)
