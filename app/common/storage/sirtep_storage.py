@@ -12,9 +12,15 @@ class SirtepStorage(Storage):
     Inherits from Storage class of idustorage
     """
 
-    def __init__(self, cache_path: Path, config: Config, separator: str = "_"):
+    def __init__(
+        self,
+        cache_path: Path,
+        config: Config,
+        separator: str = "_",
+        actuality_env_name: str = "ACTUALITY",
+    ):
 
-        super().__init__(cache_path, config, separator)
+        super().__init__(cache_path, config, separator, actuality_env_name)
 
     def retrieve_cached_file(self, pattern: str, ext: str, *args) -> str:
         """
@@ -40,7 +46,7 @@ class SirtepStorage(Storage):
             broken_filename = file.split(self.separator)
             date = datetime.datetime.strptime(broken_filename[0], "%Y-%m-%d-%H-%M-%S")
             hours_diff = (datetime.datetime.now() - date).total_seconds() // 3600
-            if hours_diff < int(self.config.get("actuality")):
+            if hours_diff < int(self.config.get("ACTUALITY")):
                 actual_filename = file
                 logger.info(f"Found cached file - {actual_filename}")
                 break
