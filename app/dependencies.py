@@ -11,8 +11,10 @@ from app.common.storage.sirtep_storage import SirtepStorage
 from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
 from app.sirtep.sirtep_service import SirtepService
+from app.system_router.config.config_service import ConfigService
 
 config: Config | None = None
+config_service: ConfigService | None = None
 log_path: Path | None = None
 urban_api_json_handler: JSONAPIHandler | None = None
 urban_api_client: UrbanAPIClient | None = None
