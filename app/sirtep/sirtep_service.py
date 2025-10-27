@@ -180,15 +180,15 @@ class SirtepService:
                         capacity = current_type_services.loc[available_matrix.columns,][
                             "capacity"
                         ].sum()
-                        result_df.loc[period, service_type_id] = round(
-                            demand / capacity, 2
+                        result_df.loc[period, service_type_id] = int(
+                            round(demand / capacity * 100, 2)
                         )
 
                 # updating task progress
                 processed += 1
                 self.task_service.set_task_progress(
                     task_id,
-                    round(processed / total_to_process * 100, 2),
+                    round(processed / total_to_process * 100),
                 )
 
         self.storage_service.store_df(result_df, "provision", *args)
