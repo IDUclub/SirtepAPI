@@ -2,6 +2,8 @@ from datetime import datetime
 from functools import wraps
 from typing import Any, Literal
 
+from app.common.exceptions.sirtep_exceptions import TaskNotFound
+
 from .entities import ProvisionTask, TaskType
 
 
@@ -120,10 +122,10 @@ class TaskService:
         if task_id in self.tasks:
             return self.tasks[task_id]
         else:
-            raise KeyError(f"Task {task_id} not found")
+            raise TaskNotFound(task_id, self.tasks)
 
     def delete_task(self, task_id: str):
         if task_id in self.tasks:
             del self.tasks[task_id]
         else:
-            raise KeyError(f"Task {task_id} not found")
+            raise TaskNotFound(task_id, self.tasks)
