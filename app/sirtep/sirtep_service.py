@@ -64,6 +64,11 @@ class SirtepService:
         self.storage_service = storage_service
         self.task_service = task_service
 
+    @staticmethod
+    async def get_available_profiles() -> list[int]:
+
+        return sorted(list(set(PROVISION_PROFILES + PRIORITY_PROFILES)))
+
     async def collect_project_data(
         self, scenario_id: int, territory_id: int, token: str | None = None
     ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, pd.DataFrame]:
