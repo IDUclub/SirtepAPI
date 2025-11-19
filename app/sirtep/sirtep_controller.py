@@ -15,6 +15,12 @@ from .schema import (
 sirtep_router = APIRouter(prefix="/optimize", tags=["OPTIMIZATION"])
 
 
+@sirtep_router.get("/available_profiles", response_model=list[int])
+async def get_available_profiles() -> list[int]:
+
+    return await deps.sirtep_service.get_available_profiles()
+
+
 @sirtep_router.get("/scheduler", response_model=SchedulerOptimizationSchema)
 async def get_scheduler(
     params: Annotated[SchedulerDTO, Depends(SchedulerDTO)],
