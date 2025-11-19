@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 import app.dependencies as deps
 from app.common.auth.auth import verify_token
 
-from .dto import SchedulerDTO
+from .dto import ProvisionDTO, SchedulerDTO
 from .schema import (
     ProvisionInProgressSchema,
     ProvisionSchema,
@@ -34,7 +34,7 @@ async def get_scheduler(
     "/teps", response_model=Union[ProvisionSchema, ProvisionInProgressSchema]
 )
 async def get_teps(
-    params: Annotated[SchedulerDTO, Depends(SchedulerDTO)],
+    params: Annotated[ProvisionDTO, Depends(ProvisionDTO)],
     token: str = Depends(verify_token),
 ) -> ProvisionSchema | ProvisionInProgressSchema:
 
