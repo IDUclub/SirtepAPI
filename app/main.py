@@ -8,7 +8,7 @@ from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
 
 app = FastAPI(
-    title="Sertep API",
+    title="Sirtep API",
     description="API for scheduling project construction",
     version="0.1.0",
 )
