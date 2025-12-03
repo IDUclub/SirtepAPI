@@ -18,8 +18,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
+    title="Sirtep API",
     lifespan=lifespan,
-    title="Sertep API",
     description="API for scheduling project construction",
     version="0.2.3",
 )
