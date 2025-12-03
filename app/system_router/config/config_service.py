@@ -1,7 +1,6 @@
 from iduconfig import Config
 
 from app.common.exceptions.http_exception_wrapper import http_exception
-from app.dependencies import config
 from app.system_router.schemas import ConfigSchema
 
 
@@ -99,6 +98,3 @@ class ConfigService:
                 _input={"env_name": env_name, "env_value": env_value},
                 _detail={"error": repr(e)},
             ) from e
-
-
-config_service = ConfigService(config)

@@ -1,22 +1,41 @@
-from typing import Annotated
+from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends
 
+import app.dependencies as deps
 from app.common.auth.auth import verify_token
-from app.dependencies import sirtep_service
 
-from .dto import SchedulerDTO
+from .dto import ProvisionDTO, SchedulerDTO
 from .schema import (
-    SchedulerOptimizaionSchema,
+    ProvisionInProgressSchema,
+    ProvisionSchema,
+    SchedulerOptimizationSchema,
 )
 
 sirtep_router = APIRouter(prefix="/optimize", tags=["OPTIMIZATION"])
 
 
-@sirtep_router.get("/scheduler", response_model=SchedulerOptimizaionSchema)
+@sirtep_router.get("/available_profiles", response_model=list[int])
+async def get_available_profiles() -> list[int]:
+
+    return await deps.sirtep_service.get_available_profiles()
+
+
+@sirtep_router.get("/scheduler", response_model=SchedulerOptimizationSchema)
 async def get_scheduler(
     params: Annotated[SchedulerDTO, Depends(SchedulerDTO)],
     token: str = Depends(verify_token),
-) -> SchedulerOptimizaionSchema:
+) -> SchedulerOptimizationSchema:
 
-    return await sirtep_service.calculate_schedule(params, token)
+    return await deps.sirtep_service.calculate_schedule(params, token)
+
+
+@sirtep_router.get(
+    "/teps", response_model=Union[ProvisionSchema, ProvisionInProgressSchema]
+)
+async def get_teps(
+    params: Annotated[ProvisionDTO, Depends(ProvisionDTO)],
+    token: str = Depends(verify_token),
+) -> ProvisionSchema | ProvisionInProgressSchema:
+
+    return await deps.sirtep_service.get_provision_for_request(params, token)

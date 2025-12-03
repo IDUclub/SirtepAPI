@@ -47,11 +47,12 @@ class SirtepDataParser:
             "physical_object_id", drop=True
         )
         unique_object_keys = set(
-            np.reshape(
+            np.hstack(
                 living_buildings["physical_objects"].apply(
-                    lambda x: x[0]["building"].keys() if x[0]["building"] else None
+                    lambda x: (
+                        list(x[0]["building"].keys()) if x[0]["building"] else None
+                    )
                 ),
-                -1,
             )
         )
         if "floors" not in unique_object_keys:
@@ -59,7 +60,7 @@ class SirtepDataParser:
         else:
             living_buildings_gdf["floors"] = living_buildings_gdf[
                 "physical_objects"
-            ].apply(lambda x: x["floors"])
+            ].apply(lambda x: x[0]["building"].get("floors"))
             living_buildings_gdf["floors"] = living_buildings_gdf["floors"].fillna(
                 living_buildings_gdf["floors"].mean()
             )
@@ -99,7 +100,7 @@ class SirtepDataParser:
             gpd.GeoDataFrame: parsed services gdf
         """
 
-        services_gdf = services.set_index("service_id", drop=True)
+        services_gdf = services.copy()
         services_gdf["service_area"] = services_gdf.to_crs(
             services_gdf.estimate_utm_crs()
         ).area.copy()
@@ -144,7 +145,8 @@ class SirtepDataParser:
             * 1000
             / services_gdf["services_capacity_per_1000_normative"]
         )
-        return services_gdf
+        services_gdf["geometry"] = services.representative_point()
+        return services_gdf.set_index("service_id", drop=True)
 
     async def async_parse_services(
         self, services: gpd.GeoDataFrame, normative: pd.DataFrame
@@ -168,6 +170,7 @@ class SirtepDataParser:
         before input.
         Args:
             objects (gpd.GeoDataFrame): raw objects gdf
+            profile_id (int): profile id
         Returns:
             gpd.GeoDataFrame: parsed objects gdf
         """

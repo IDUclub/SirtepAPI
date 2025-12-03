@@ -1,13 +1,11 @@
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
 
+import app.dependencies as deps
 from app.common.exceptions.http_exception_wrapper import http_exception
-from app.dependencies import absolute_app_path, config
 
-from .config import config_service
 from .schemas import ConfigSchema
 
-LOGS_PATH = absolute_app_path / f"{config.get('LOG_NAME')}"
 system_router = APIRouter(prefix="/system", tags=["System"])
 
 
@@ -20,22 +18,28 @@ async def get_logs():
 
     try:
         return FileResponse(
-            LOGS_PATH,
+            deps.log_path,
             media_type="application/octet-stream",
-            filename=config.get("LOG_NAME"),
+            filename=deps.config.get("LOG_NAME"),
         )
     except FileNotFoundError as e:
         raise http_exception(
             status_code=404,
             msg="Log file not found",
-            _input={"log_path": LOGS_PATH, "log_file_name": config.get("LOG_NAME")},
+            _input={
+                "log_path": deps.log_path,
+                "log_file_name": deps.config.get("LOG_NAME"),
+            },
             _detail={"error": repr(e)},
         ) from e
     except Exception as e:
         raise http_exception(
             status_code=500,
             msg="Internal server error during reading logs",
-            _input={"log_path": LOGS_PATH, "log_file_name": config.get("LOG_NAME")},
+            _input={
+                "log_path": deps.log_path,
+                "log_file_name": deps.config.get("LOG_NAME"),
+            },
             _detail={"error": repr(e)},
         ) from e
 
@@ -50,7 +54,7 @@ async def get_config(key: str) -> ConfigSchema:
         - key (str): config key
     """
 
-    return await config_service.get_config(key)
+    return await deps.config_service.get_env(key)
 
 
 @system_router.post("/config", response_model=ConfigSchema, status_code=201)
@@ -64,7 +68,7 @@ async def set_config(key: str, value: str) -> ConfigSchema:
         - value (str): config value
     """
 
-    return await config_service.set_config(key, value)
+    return await deps.config_service.set_env(key, value)
 
 
 @system_router.patch("/config", response_model=ConfigSchema, status_code=201)
@@ -78,4 +82,4 @@ async def reset_config(key: str, value: str) -> ConfigSchema:
         - value (str): config value
     """
 
-    return await config_service.reset_config(key, value)
+    return await deps.config_service.reset_env(key, value)

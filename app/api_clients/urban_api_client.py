@@ -53,7 +53,12 @@ class UrbanAPIClient:
         )
         if response["features"]:
             return gpd.GeoDataFrame.from_features(response, crs=4326)
-        return gpd.GeoDataFrame()
+        raise http_exception(
+            400,
+            "No living buildings found in scenario project data",
+            _input={"scenario_id": scenario_id},
+            _detail=None,
+        )
 
     async def get_scenario_services(
         self,
@@ -78,7 +83,7 @@ class UrbanAPIClient:
         if response["features"]:
             result = gpd.GeoDataFrame.from_features(response, crs=4326)
             if service_type_ids:
-                result = result[result["service_type_ud"].isin(service_type_ids)].copy()
+                result = result[result["service_type_id"].isin(service_type_ids)].copy()
             return result
         else:
             return None
@@ -142,3 +147,13 @@ class UrbanAPIClient:
                 _input={"physical_object_types_ids": physical_object_types_ids},
                 _detail={"error": repr(e)},
             ) from e
+
+    async def get_service_types_map(self) -> dict[int, str]:
+        """
+        Function retrieves service types map for all services.
+        Returns:
+            dict: service types map.
+        """
+
+        response = await self.json_handler.get("api/v1/service_types")
+        return {item["service_type_id"]: item["name"] for item in response}
