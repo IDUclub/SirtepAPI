@@ -61,9 +61,12 @@ class SirtepDataParser:
             living_buildings_gdf["floors"] = living_buildings_gdf[
                 "physical_objects"
             ].apply(lambda x: x[0]["building"].get("floors"))
-            living_buildings_gdf["floors"] = living_buildings_gdf["floors"].fillna(
-                living_buildings_gdf["floors"].mean()
-            )
+            if len(living_buildings_gdf.dropna(subset=["floors"])) < 1:
+                living_buildings_gdf["floors"] = int(self.config.get("DEFAULT_FLOORS"))
+            else:
+                living_buildings_gdf["floors"] = living_buildings_gdf["floors"].fillna(
+                    living_buildings_gdf["floors"].mean()
+                )
         living_buildings_gdf["living_area"] = (
             living_buildings_gdf.to_crs(living_buildings_gdf.estimate_utm_crs()).area
             * living_buildings_gdf["floors"]
