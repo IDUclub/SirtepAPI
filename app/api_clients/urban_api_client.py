@@ -148,12 +148,18 @@ class UrbanAPIClient:
                 _detail={"error": repr(e)},
             ) from e
 
-    async def get_service_types_map(self) -> dict[int, str]:
+    async def get_service_types_map(
+        self, id_as_string: bool = False
+    ) -> dict[int | str, str]:
         """
         Function retrieves service types map for all services.
+        Args:
+            id_as_string (bool, optional): if True, service types map is returned as string. Defaults to False.
         Returns:
-            dict: service types map.
+            dict[int | str, str]: service types id-name map.
         """
 
         response = await self.json_handler.get("api/v1/service_types")
+        if id_as_string:
+            return {str(item["service_type_id"]): item["name"] for item in response}
         return {item["service_type_id"]: item["name"] for item in response}
