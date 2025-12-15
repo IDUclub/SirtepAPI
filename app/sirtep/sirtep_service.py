@@ -234,7 +234,7 @@ class SirtepService:
         """
 
         scenario_data = await self.urban_api_gateway.get_scenario_info(
-            params.scenario_id
+            params.scenario_id, token=token
         )
         actual_scenario_update = datetime.strptime(
             scenario_data["updated_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
