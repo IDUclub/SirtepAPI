@@ -186,7 +186,7 @@ class SirtepService:
                             "capacity"
                         ].sum()
                         result_df.loc[period, service_type_id] = int(
-                            round(demand / capacity * 100, 2)
+                            round(capacity / demand * 100, 2)
                         )
 
                 # updating task progress
