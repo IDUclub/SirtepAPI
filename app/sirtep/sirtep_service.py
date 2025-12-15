@@ -130,7 +130,18 @@ class SirtepService:
             None
         """
 
-        result_df = pd.DataFrame(columns=service_types, index=range(num_periods))
+        buildings_columns = [
+            "Жилая площадь",
+            "Количество жилых домов",
+            "Количество людей",
+        ]
+        additional_info_columns = [
+            f"{i}_service_nums" for i in service_types
+        ] + buildings_columns
+
+        result_df = pd.DataFrame(
+            columns=service_types + additional_info_columns, index=range(num_periods)
+        )
         total_to_process = len(buildings_built_periods) * len(service_types)
         processed = 0
         self.task_service.set_task_status(task_id, "pending")
@@ -141,7 +152,7 @@ class SirtepService:
 
         # iterating over all periods
         for period in range(num_periods):
-            # data for current period (buiuldings, services, matrix)
+            # data for current period (buildings, services, matrix)
             b_period_ids, s_period_ids = [
                 df[df["period"] <= period]["id"].to_list() for df in (b_df, s_df)
             ]
@@ -149,11 +160,24 @@ class SirtepService:
                 matrix.index.isin(b_period_ids), matrix.columns.isin(s_period_ids)
             ]
             period_buildings = buildings[buildings.index.isin(b_period_ids)]
+            period_living_area = round(period_buildings["living_area"].sum(), 2)
+            period_buildings_num = len(period_buildings)
+            period_population = round(period_buildings["population"].sum(), 2)
+            result_df.loc[period, buildings_columns] = [
+                period_living_area,
+                period_buildings_num,
+                period_population,
+            ]
             period_services = services[services.index.isin(s_period_ids)]
 
             # iterating over all service types
             for service_type_id in service_types:
-
+                current_type_services = period_services[
+                    period_services["service_type_id"] == service_type_id
+                ]
+                result_df.loc[period, f"{service_type_id}_service_nums"] = len(
+                    current_type_services
+                )
                 if not service_type_id in period_services["service_type_id"].unique():
                     result_df.loc[period, service_type_id] = (
                         0  # provision equals to 0 if no services of this type are built
@@ -161,9 +185,6 @@ class SirtepService:
                 else:
 
                     # data for current service type
-                    current_type_services = period_services[
-                        period_services["service_type_id"] == service_type_id
-                    ]
                     available_matrix = period_matrix.loc[
                         period_buildings.index.intersection(period_matrix.index),
                         current_type_services.index.intersection(period_matrix.columns),
@@ -185,8 +206,10 @@ class SirtepService:
                         capacity = current_type_services.loc[available_matrix.columns,][
                             "capacity"
                         ].sum()
-                        result_df.loc[period, service_type_id] = int(
-                            round(capacity / demand * 100, 2)
+                        result_df.loc[period, service_type_id] = (
+                            int(round(capacity / demand * 100, 2))
+                            if capacity / demand < 1
+                            else 100
                         )
 
                 # updating task progress
@@ -196,6 +219,14 @@ class SirtepService:
                     round(processed / total_to_process * 100),
                 )
 
+        result_df.rename(
+            columns={
+                column: str(column)
+                for column in result_df.columns
+                if isinstance(column, int)
+            },
+            inplace=True,
+        )
         self.storage_service.store_df(result_df, "provision", *args)
         self.task_service.set_task_status(task_id, "complete d")
 
@@ -383,9 +414,17 @@ class SirtepService:
             provision_df = self.storage_service.read_df("provision", *cache_args)
             if isinstance(provision_df, pd.DataFrame):
                 service_id_name_map = (
-                    await self.urban_api_gateway.get_service_types_map()
+                    await self.urban_api_gateway.get_service_types_map(
+                        id_as_string=True
+                    )
                 )
-                provision_df.rename(columns=service_id_name_map, inplace=True)
+                service_nums_map = {
+                    f"{k}_service_nums": f"Количество сервисов тпиа: {v}"
+                    for k, v in service_id_name_map.items()
+                }
+                provision_df.rename(
+                    columns={**service_id_name_map, **service_nums_map}, inplace=True
+                )
                 return ProvisionSchema(
                     periods=[i for i in range(len(provision_df))],
                     provision=provision_df.to_dict(orient="records"),

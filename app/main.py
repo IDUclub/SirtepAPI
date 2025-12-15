@@ -21,7 +21,7 @@ app = FastAPI(
     title="Sirtep API",
     lifespan=lifespan,
     description="API for scheduling project construction",
-    version="0.2.5",
+    version="0.2.6",
 )
 
 origins = ["*"]
