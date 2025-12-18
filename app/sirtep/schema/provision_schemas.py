@@ -9,10 +9,12 @@ class ProvisionSchema(BaseModel):
     Attributes:
         periods (list[int]): List of periods.
         provision (list[dict[str, float]]): List of provision dictionaries.
+        unbuilt_services (list[str]): List of unbuilt services.
     """
 
     periods: list[int]
     provision: list[dict[str, float]]
+    unbuilt_services: list[str]
 
     @model_validator(mode="after")
     def check_lengths(self) -> Self:
