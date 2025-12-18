@@ -131,9 +131,9 @@ class SirtepService:
         """
 
         buildings_columns = [
-            "Жилая площадь",
+            "Жилая площадь (кв.м)",
             "Количество жилых домов",
-            "Количество людей",
+            "Количество людей (человек)",
         ]
         additional_info_columns = [
             f"{i}_service_nums" for i in service_types
@@ -418,8 +418,17 @@ class SirtepService:
                         id_as_string=True
                     )
                 )
+                drop_columns = [
+                    column
+                    for column in provision_df.columns
+                    if (
+                        len(provision_df[column].unique()) < 2
+                        and provision_df[column].unique()[0] == 0
+                    )
+                ]
+                provision_df.drop(columns=drop_columns, inplace=True)
                 service_nums_map = {
-                    f"{k}_service_nums": f"Количество сервисов тпиа: {v}"
+                    f"{k}_service_nums": f"Количество сервисов типа: {v}"
                     for k, v in service_id_name_map.items()
                 }
                 provision_df.rename(
@@ -428,6 +437,9 @@ class SirtepService:
                 return ProvisionSchema(
                     periods=[i for i in range(len(provision_df))],
                     provision=provision_df.to_dict(orient="records"),
+                    unbuilt_services=[
+                        service_id_name_map[i] for i in drop_columns if i.isdigit()
+                    ],
                 )
             else:
                 raise http_exception(
