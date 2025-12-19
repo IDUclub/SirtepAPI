@@ -162,7 +162,7 @@ class SirtepService:
             period_buildings = buildings[buildings.index.isin(b_period_ids)]
             period_living_area = round(period_buildings["living_area"].sum(), 2)
             period_buildings_num = len(period_buildings)
-            period_population = round(period_buildings["population"].sum(), 2)
+            period_population = int(period_buildings["population"].sum())
             result_df.loc[period, buildings_columns] = [
                 period_living_area,
                 period_buildings_num,
@@ -418,6 +418,9 @@ class SirtepService:
                         id_as_string=True
                     )
                 )
+                service_id_prod_name_map = {
+                    k: f"Обеспеченность {v} (%)" for k, v in service_id_name_map.items()
+                }
                 drop_columns = [
                     column
                     for column in provision_df.columns
@@ -432,7 +435,8 @@ class SirtepService:
                     for k, v in service_id_name_map.items()
                 }
                 provision_df.rename(
-                    columns={**service_id_name_map, **service_nums_map}, inplace=True
+                    columns={**service_id_prod_name_map, **service_nums_map},
+                    inplace=True,
                 )
                 return ProvisionSchema(
                     periods=[i for i in range(len(provision_df))],
