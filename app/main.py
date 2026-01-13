@@ -5,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import RedirectResponse
 
+from app.__version__ import APP_VERSION
 from app.common.exceptions.exception_handler import ExceptionHandlerMiddleware
-from app.init_entities import init_entities
+from app.init_entities import init_entities, shutdrown_app
 from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
 
@@ -15,13 +16,14 @@ from app.system_router.system_controller import system_router
 async def lifespan(app: FastAPI):
     await init_entities()
     yield
+    await shutdrown_app()
 
 
 app = FastAPI(
     title="Sirtep API",
     lifespan=lifespan,
     description="API for scheduling project construction",
-    version="0.2.7",
+    version=APP_VERSION,
 )
 
 origins = ["*"]

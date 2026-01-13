@@ -6,11 +6,12 @@ import app.dependencies as deps
 from app.api_clients.urban_api_client import UrbanAPIClient
 from app.common.api_handlers.json_api_handler import JSONAPIHandler
 from app.common.logging.logger_conf import configure_logger
-from app.common.parsing.sirtep_data_parser import SirtepDataParser
 from app.common.sceduler.sceduler import Scheduler
 from app.common.storage.sirtep_storage import SirtepStorage
 from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
+from app.observability import OpenTelemetryAgent, PrometheusConfig
+from app.observability.metrics import setup_metrics
 from app.sirtep.sirtep_service import SirtepService
 from app.system_router.config.config_service import ConfigService
 
@@ -67,3 +68,17 @@ async def init_entities():
     await deps.scheduler.add_job(
         deps.storage_service.delete_irrelevant_cache, "interval"
     )
+    deps.otel_agent = OpenTelemetryAgent(
+        prometheus_config=PrometheusConfig(
+            host="0.0.0.0",
+            port=int(deps.config.get("PROMETHEUS_PORT")),
+        ),
+        jaeger_config=None,
+    )
+    setup_metrics()
+
+
+async def shutdrown_app():
+
+    if deps.otel_agent:
+        deps.otel_agent.shutdown()
