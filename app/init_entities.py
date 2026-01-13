@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from iduconfig import Config
+from loguru import logger
 
 import app.dependencies as deps
 from app.api_clients.urban_api_client import UrbanAPIClient
@@ -24,19 +25,26 @@ async def init_entities():
     Each entity is configured using the provided configuration settings.
     """
 
+    logger.info("Initializing entities")
+    logger.info("Setting up app config instance")
     deps.config = Config()
+    logger.info("Setting up logging")
     deps.log_path = Path(deps.config.get("LOG_NAME"))
     configure_logger(
         "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <b>{message}</b>",
         "INFO",
         log_path=deps.log_path,
     )
-
+    logger.info("Starting app external config service")
     deps.config_service = ConfigService(deps.config)
+    logger.info("Setting up api handlers")
     deps.urban_api_json_handler = JSONAPIHandler(deps.config.get("URBAN_API"))
+    logger.info("Setting up api clients")
     deps.urban_api_client = UrbanAPIClient(deps.urban_api_json_handler)
+    logger.info("Setting up sirtep parser")
     deps.sirtep_parser = deps.SirtepDataParser(deps.config)
 
+    logger.info("Setting up sirtep storage")
     deps.matrix_storage = SirtepStorage(
         Path(deps.config.get("COMMON_CACHE")) / deps.config.get("MATRIX_CACHE"),
         deps.config,
@@ -49,25 +57,34 @@ async def init_entities():
         Path(deps.config.get("COMMON_CACHE")) / deps.config.get("PROVISION_CACHE"),
         deps.config,
     )
-
     deps.storage_service = StorageService(
         deps.config,
         matrix_storage=deps.matrix_storage,
         response_storage=deps.response_storage,
         provision_storage=deps.provision_storage,
     )
-
+    logger.info("Setting up task service")
     deps.task_service = TaskService()
+    logger.info("Setting up sirtep service")
     deps.sirtep_service = SirtepService(
         deps.urban_api_client,
         deps.sirtep_parser,
         deps.storage_service,
         deps.task_service,
     )
+    logger.info("Setting up scheduler")
     deps.scheduler = Scheduler(deps.config)
     await deps.scheduler.add_job(
         deps.storage_service.delete_irrelevant_cache, "interval"
     )
+
+
+async def start_prometheus():
+    """
+    Start the prometheus server
+    """
+
+    logger.info(f"Starting Prometheus server on {deps.config.get('PROMETHEUS_PORT')}")
     deps.otel_agent = OpenTelemetryAgent(
         prometheus_config=PrometheusConfig(
             host="0.0.0.0",
@@ -76,9 +93,13 @@ async def init_entities():
         jaeger_config=None,
     )
     setup_metrics()
+    logger.info(f"Prometheus server started on {deps.config.get('PROMETHEUS_PORT')}")
 
 
-async def shutdrown_app():
+async def shutdown_app():
+    """
+    Shutdowns app services
+    """
 
     if deps.otel_agent:
         deps.otel_agent.shutdown()
