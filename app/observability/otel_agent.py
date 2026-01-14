@@ -3,7 +3,7 @@
 import platform
 from functools import cache
 
-from opentelemetry import metrics, trace
+from opentelemetry import metrics
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
@@ -13,12 +13,10 @@ from opentelemetry.sdk.resources import (
     SERVICE_VERSION,
     Resource,
 )
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from app.__version__ import APP_VERSION
 
-from .config import JaegerConfig, PrometheusConfig
+from .config import PrometheusConfig
 from .metrics_server import PrometheusServer
 
 
@@ -26,7 +24,7 @@ from .metrics_server import PrometheusServer
 def get_resource() -> Resource:
     return Resource.create(
         attributes={
-            SERVICE_NAME: "SirtepAPI",
+            SERVICE_NAME: "Sirtep API",
             SERVICE_VERSION: APP_VERSION,
             SERVICE_INSTANCE_ID: platform.node(),
         }
@@ -37,7 +35,6 @@ class OpenTelemetryAgent:  # pylint: disable=too-few-public-methods
     def __init__(
         self,
         prometheus_config: PrometheusConfig | None,
-        jaeger_config: JaegerConfig | None,
     ):
         self._resource = get_resource()
         self._prometheus: PrometheusServer | None = None
@@ -51,14 +48,6 @@ class OpenTelemetryAgent:  # pylint: disable=too-few-public-methods
             reader = PrometheusMetricReader()
             provider = MeterProvider(resource=self._resource, metric_readers=[reader])
             metrics.set_meter_provider(provider)
-
-        if jaeger_config is not None:
-            self._span_exporter = OTLPSpanExporter(endpoint=jaeger_config.endpoint)
-
-            tracer_provider = TracerProvider(resource=self._resource)
-            processor = BatchSpanProcessor(span_exporter=self._span_exporter)
-            tracer_provider.add_span_processor(processor)
-            trace.set_tracer_provider(tracer_provider)
 
     def shutdown(self) -> None:
         """Stop metrics and tracing services if they were started."""
