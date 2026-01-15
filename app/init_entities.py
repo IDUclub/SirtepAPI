@@ -90,16 +90,16 @@ async def start_prometheus():
             host="0.0.0.0",
             port=int(deps.config.get("PROMETHEUS_PORT")),
         ),
-        jaeger_config=None,
     )
     setup_metrics()
     logger.info(f"Prometheus server started on {deps.config.get('PROMETHEUS_PORT')}")
 
 
-async def shutdown_app():
+async def shutdown_prometheus():
     """
-    Shutdowns app services
+    Shutdowns prometheus service
     """
 
-    if deps.otel_agent:
-        deps.otel_agent.shutdown()
+    logger.info("Shutting down Prometheus server")
+    deps.otel_agent.shutdown()
+    logger.info("Prometheus server was shut down")

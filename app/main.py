@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from app.__version__ import APP_VERSION
 from app.common.exceptions.exception_handler import ExceptionHandlerMiddleware
-from app.init_entities import init_entities, shutdown_app, start_prometheus
+from app.init_entities import init_entities, shutdown_prometheus, start_prometheus
 from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
 
@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     await init_entities()
     await start_prometheus()
     yield
-    await shutdown_app()
+    await shutdown_prometheus()
 
 
 app = FastAPI(
