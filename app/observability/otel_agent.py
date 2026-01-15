@@ -4,7 +4,6 @@ import platform
 from functools import cache
 
 from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import (
@@ -41,7 +40,6 @@ class OpenTelemetryAgent:  # pylint: disable=too-few-public-methods
     ):
         self._resource = get_resource()
         self._prometheus: PrometheusServer | None = None
-        self._span_exporter: OTLPSpanExporter | None = None
 
         if prometheus_config is not None:
             self._prometheus = PrometheusServer(
@@ -53,10 +51,7 @@ class OpenTelemetryAgent:  # pylint: disable=too-few-public-methods
             metrics.set_meter_provider(provider)
 
         if jaeger_config is not None:
-            self._span_exporter = OTLPSpanExporter(endpoint=jaeger_config.endpoint)
-
             tracer_provider = TracerProvider(resource=self._resource)
-            processor = BatchSpanProcessor(span_exporter=self._span_exporter)
             tracer_provider.add_span_processor(processor)
             trace.set_tracer_provider(tracer_provider)
 
