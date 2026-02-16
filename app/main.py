@@ -7,7 +7,9 @@ from fastapi.responses import RedirectResponse
 
 from app.__version__ import APP_VERSION
 from app.common.exceptions.exception_handler import ExceptionHandlerMiddleware
+from app.common.observability.prometheus_handler import ObservabilityMiddleware
 from app.init_entities import init_entities, shutdown_prometheus, start_prometheus
+from app.observability.metrics import setup_metrics
 from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
 
@@ -38,6 +40,7 @@ app.add_middleware(
 )
 app.add_middleware(GZipMiddleware, minimum_size=100)
 app.add_middleware(ExceptionHandlerMiddleware)
+app.add_middleware(ObservabilityMiddleware, metrics=setup_metrics())
 
 
 @app.get("/", include_in_schema=False)
