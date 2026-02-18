@@ -14,6 +14,9 @@ from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
 
 
+metrics = setup_metrics()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_entities()
@@ -39,8 +42,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=100)
-app.add_middleware(ObservabilityMiddleware, metrics=setup_metrics())
-app.add_middleware(ExceptionHandlerMiddleware)
+app.add_middleware(ObservabilityMiddleware, metrics=metrics)
+app.add_middleware(ExceptionHandlerMiddleware, metrics=metrics)
 
 
 @app.get("/", include_in_schema=False)
