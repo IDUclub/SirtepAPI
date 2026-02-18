@@ -7,6 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 from .sirtep_exceptions import TaskNotFound
+from app.observability.metrics import Metrics
 
 
 class ExceptionHandlerMiddleware(
@@ -18,7 +19,7 @@ class ExceptionHandlerMiddleware(
            app (FastAPI): The FastAPI application instance.
     """
 
-    def __init__(self, app: FastAPI):
+    def __init__(self, app: FastAPI, metrics: Metrics):
         """
         Universal exception handler middleware init function.
         Args:
@@ -26,6 +27,7 @@ class ExceptionHandlerMiddleware(
         """
 
         super().__init__(app)
+        self.metrics = metrics
 
     @staticmethod
     async def prepare_request_info(request: Request) -> dict:
@@ -81,6 +83,14 @@ class ExceptionHandlerMiddleware(
 
         except Exception as e:
             request_info = await self.prepare_request_info(request)
+            self.metrics.http.errors.add(
+                {
+                    "method": request.method,
+                    "path": request.scope["route"].path if request.scope.get("route") else request.url.path,
+                    "error_type": type(e).__name__,
+                    "status_code": 500,
+                },
+            )
             return JSONResponse(
                 status_code=500,
                 content={
