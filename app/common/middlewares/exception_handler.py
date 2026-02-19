@@ -2,13 +2,13 @@
 
 import traceback
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+from app.common.exceptions.sirtep_exceptions import TaskNotFound
+from app.common.middlewares.middleware_utils import _normalize_path
 from app.observability.metrics import Metrics
-
-from .sirtep_exceptions import TaskNotFound
 
 
 class ExceptionHandlerMiddleware(
@@ -88,9 +88,8 @@ class ExceptionHandlerMiddleware(
                 1,
                 {
                     "method": request.method,
-                    "path": self._normalize_path(request),
+                    "path": _normalize_path(request),
                     "error_type": type(e).__name__,
-                    "status_code": 500,
                 },
             )
             return JSONResponse(
@@ -103,16 +102,3 @@ class ExceptionHandlerMiddleware(
                     "traceback": traceback.format_exc().splitlines(),
                 },
             )
-
-    @staticmethod
-    def _normalize_path(request: Request) -> str:
-        """
-        Normalize path to avoid high-cardinality metrics.
-        """
-
-        route = request.scope.get("route")
-
-        if route and hasattr(route, "path"):
-            return route.path
-
-        return request.url.path

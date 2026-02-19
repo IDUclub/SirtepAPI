@@ -6,13 +6,12 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import RedirectResponse
 
 from app.__version__ import APP_VERSION
-from app.common.exceptions.exception_handler import ExceptionHandlerMiddleware
-from app.common.observability.prometheus_handler import ObservabilityMiddleware
+from app.common.middlewares.exception_handler import ExceptionHandlerMiddleware
+from app.common.middlewares.prometheus_handler import ObservabilityMiddleware
 from app.init_entities import init_entities, shutdown_prometheus, start_prometheus
 from app.observability.metrics import setup_metrics
 from app.sirtep.sirtep_controller import sirtep_router
 from app.system_router.system_controller import system_router
-
 
 metrics = setup_metrics()
 
@@ -41,9 +40,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(GZipMiddleware, minimum_size=100)
-app.add_middleware(ObservabilityMiddleware, metrics=metrics)
+
 app.add_middleware(ExceptionHandlerMiddleware, metrics=metrics)
+app.add_middleware(ObservabilityMiddleware, metrics=metrics)
+app.add_middleware(GZipMiddleware, minimum_size=100)
 
 
 @app.get("/", include_in_schema=False)

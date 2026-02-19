@@ -5,6 +5,7 @@ import time
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from app.common.middlewares.middleware_utils import _normalize_path
 from app.observability.metrics import Metrics
 
 
@@ -21,8 +22,8 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
         self._http_metrics = metrics.http
 
     async def dispatch(self, request: Request, call_next):
-        
-        path = request.url.path
+
+        path = _normalize_path(request)
         method = request.method
         self._http_metrics.requests_started.add(1, {"method": method, "path": path})
         self._http_metrics.inflight_requests.add(1)
@@ -38,4 +39,3 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
         )
         self._http_metrics.inflight_requests.add(-1)
         return response
-
