@@ -10,6 +10,7 @@ from app.common.storage.sirtep_storage import SirtepStorage
 from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
 from app.observability import OpenTelemetryAgent
+from app.observability.metrics import Metrics
 from app.sirtep.sirtep_service import SirtepService
 from app.system_router.config.config_service import ConfigService
 

@@ -12,7 +12,6 @@ from app.common.storage.sirtep_storage import SirtepStorage
 from app.common.storage.storage_service import StorageService
 from app.common.tasks.task_service import TaskService
 from app.observability import OpenTelemetryAgent, PrometheusConfig
-from app.observability.metrics import setup_metrics
 from app.sirtep.sirtep_service import SirtepService
 from app.system_router.config.config_service import ConfigService
 
@@ -91,7 +90,6 @@ async def start_prometheus():
             port=int(deps.config.get("PROMETHEUS_PORT")),
         ),
     )
-    setup_metrics()
     logger.info(f"Prometheus server started on {deps.config.get('PROMETHEUS_PORT')}")
 
 

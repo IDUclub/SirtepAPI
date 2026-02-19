@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1
 ENV APP_ENV=production
 ENV APP_WORKERS=1
 
-#add pypi mirror to config
+# Add pypi mirror to config
 COPY pip.conf /etc/xdg/pip/pip.conf
 
 # Install pip requirements
