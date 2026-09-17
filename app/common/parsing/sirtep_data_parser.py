@@ -60,7 +60,7 @@ class SirtepDataParser:
         else:
             living_buildings_gdf["floors"] = living_buildings_gdf[
                 "physical_objects"
-            ].apply(lambda x: x[0]["building"].get("floors"))
+            ].apply(lambda x: (x[0].get("building") or {}).get("floors"))
             if len(living_buildings_gdf.dropna(subset=["floors"])) < 1:
                 living_buildings_gdf["floors"] = int(self.config.get("DEFAULT_FLOORS"))
             else:
