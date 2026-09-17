@@ -45,7 +45,6 @@ class ExceptionHandlerMiddleware(
             "url": str(request.url),
             "path_params": dict(request.path_params),
             "query_params": dict(request.query_params),
-            "headers": dict(request.headers),
         }
 
         try:
